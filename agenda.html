@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Agenda una valoración estética láser con Jenny Delgado.">
+    <title>Agendar valoración | Jenny Delgado Centro Estética Láser</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Ir al inicio">
+        <span class="brand-mark">LC</span>
+        <span>
+          <strong>Jenny Delgado</strong>
+          <small>Centro Estética Láser</small>
+        </span>
+      </a>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a href="index.html">Estética</a>
+        <a href="index.html?section=tratamientos">Tratamientos</a>
+        <a href="agenda.html">Agendar</a>
+        <a href="login.html">Ingresar</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="page-hero">
+        <p class="eyebrow">Agenda estética</p>
+        <h1>Reserva una valoración con Jenny Delgado.</h1>
+        <p>Selecciona el servicio FOTONA, el día y el horario que mejor se ajuste. Esta agenda usa una base local demo separada del sitio ginecológico.</p>
+      </section>
+
+      <section class="section appointment-shell">
+        <p class="session-note" id="patient-welcome" hidden></p>
+        <div class="auth-gate" id="booking-auth-gate">
+          <span class="tag">Perfil requerido</span>
+          <h2>Para agendar, primero crea tu perfil o inicia sesión.</h2>
+          <p>Esto permite guardar tus datos básicos y preparar la valoración estética correctamente.</p>
+          <a class="button primary" href="login.html?next=agenda">Crear perfil</a>
+          <p class="auth-login-link">Si ya tienes perfil, <a href="login.html?mode=login&next=agenda">ingresa aquí</a>.</p>
+        </div>
+        <div class="booking-layout" hidden>
+          <form class="booking-form premium-booking" id="booking-form" novalidate>
+            <div class="booking-native-controls">
+              <select id="booking-area" required></select>
+              <select id="booking-service" required></select>
+              <input id="booking-date" type="date" required>
+              <select id="booking-time" required></select>
+              <input id="patient-name" type="hidden">
+              <input id="patient-email" type="hidden">
+            </div>
+
+            <div class="booking-step">
+              <span class="step-kicker">01</span>
+              <div>
+                <h3>Área</h3>
+                <p>Elegí la categoría de atención.</p>
+              </div>
+              <div class="choice-grid area-choice-grid" id="area-choice"></div>
+            </div>
+
+            <div class="booking-step">
+              <span class="step-kicker">02</span>
+              <div>
+                <h3>Servicio</h3>
+                <p>Seleccioná el tratamiento o consulta.</p>
+              </div>
+              <div class="choice-grid service-choice-grid" id="service-choice"></div>
+            </div>
+
+            <div class="booking-step">
+              <span class="step-kicker">03</span>
+              <div>
+                <h3>Fecha</h3>
+                <p>Próximos días disponibles.</p>
+              </div>
+              <div class="date-picker-panel">
+                <div class="month-switcher">
+                  <button class="month-button" id="prev-month" type="button" aria-label="Mes anterior">‹</button>
+                  <strong id="current-month-label">Mes</strong>
+                  <button class="month-button" id="next-month" type="button" aria-label="Mes siguiente">›</button>
+                </div>
+                <div class="date-choice-strip" id="date-choice"></div>
+              </div>
+            </div>
+
+            <div class="booking-step">
+              <span class="step-kicker">04</span>
+              <div>
+                <h3>Hora</h3>
+                <p>Escogé uno de los espacios abiertos.</p>
+              </div>
+              <div class="time-choice-grid" id="time-choice"></div>
+            </div>
+
+            <div class="booking-step contact-step">
+              <span class="step-kicker">05</span>
+              <div>
+                <h3>Contacto</h3>
+                <p>Solo necesitamos un teléfono para confirmar.</p>
+              </div>
+              <div class="contact-grid">
+                <label>
+                  Teléfono
+                  <input id="patient-phone" type="tel" autocomplete="tel" placeholder="+506 8888-8888" required>
+                </label>
+                <label>
+                  Nota
+                  <textarea id="patient-note" rows="3" placeholder="Motivo de consulta o comentario opcional"></textarea>
+                </label>
+              </div>
+            </div>
+            <button class="button primary wide" type="submit">Confirmar cita</button>
+            <p class="form-message" id="booking-message" role="status"></p>
+          </form>
+
+          <div class="booking-side">
+            <aside class="availability-card">
+              <div class="card-header">
+                <span class="tag">Disponibilidad</span>
+                <strong id="availability-title">Seleccione una fecha</strong>
+              </div>
+              <div class="slot-list" id="slot-list"></div>
+            </aside>
+
+            <aside class="patient-appointments-card" id="citas-agendadas">
+              <div class="card-header">
+                <span class="tag">Citas agendadas</span>
+                <strong>Resumen de tus próximas visitas</strong>
+              </div>
+              <div class="patient-appointment-list" id="patient-appointment-list"></div>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© 2026 Jenny Delgado Centro Estética Láser.</p>
+      <p>La información de esta versión se conserva localmente para fines de presentación.</p>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Ingreso general para clientes y administración de estética láser.">
+    <title>Crear perfil | Jenny Delgado Centro Estética Láser</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Ir al inicio">
+        <span class="brand-mark">LC</span>
+        <span>
+          <strong>Jenny Delgado</strong>
+          <small>Centro Estética Láser</small>
+        </span>
+      </a>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a href="index.html">Estética</a>
+        <a href="index.html?section=tratamientos">Tratamientos</a>
+        <a href="agenda.html">Agendar</a>
+        <a href="login.html">Ingresar</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="page-hero login-hero">
+        <p class="eyebrow">Perfil</p>
+        <h1>Ingreso general al perfil.</h1>
+        <p>Usa tu correo y contraseña. El sistema mostrará la agenda o el panel correcto según el perfil registrado.</p>
+      </section>
+
+      <section class="section login-grid single-login">
+        <form class="login-card featured unified-login" id="unified-login-form" novalidate>
+          <span class="tag">Crear perfil</span>
+          <h2>Datos de acceso</h2>
+          <label id="full-name-field">
+            Nombre completo
+            <input id="login-name" type="text" autocomplete="name" required>
+          </label>
+          <label>
+            Correo
+            <input id="login-email" type="email" autocomplete="email" required>
+          </label>
+          <label>
+            Contraseña nueva
+            <input id="login-password" type="password" autocomplete="new-password" minlength="6" required>
+          </label>
+          <label id="confirm-password-field">
+            Confirmar contraseña
+            <input id="login-password-confirm" type="password" autocomplete="new-password" minlength="6" required>
+          </label>
+          <button class="button primary wide" id="login-submit" type="submit">Crear perfil</button>
+          <p class="login-switch" id="login-switch">¿Ya tenés una cuenta? <a href="login.html" id="existing-account-link">Ingresar</a></p>
+        </form>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© 2026 Jenny Delgado Centro Estética Láser.</p>
+      <p>Acceso preparado como prototipo para conectar con autenticación real.</p>
+    </footer>
+  </body>
+</html>
