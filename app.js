@@ -6,9 +6,18 @@ const AREAS = {
     password: "123456",
     services: [
       "Valoración estética",
-      "Tensado corporal y celulitis",
-      "Rejuvenecimiento facial FOTONA 6D",
-      "Depilación FOTONA"
+      "Pure Skin Ritual",
+      "Hydra Skin Therapy",
+      "Age Reverse Facial",
+      "Korean Glass Skin",
+      "Dermapen Skin Booster",
+      "Salmon DNA Repair",
+      "Rejuvenecimiento facial Fotona",
+      "Fotona4D",
+      "Silk Skin Laser",
+      "TightSculpting Fotona",
+      "Star Former Sculpt",
+      "Arañitas / Telangiectasias"
     ],
     slots: ["09:00", "10:30", "12:00", "14:30", "16:00", "17:00"]
   }
