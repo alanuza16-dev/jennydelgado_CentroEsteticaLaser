@@ -84,6 +84,17 @@ textarea {
   font-weight: 800;
 }
 
+.brand-logo-mark {
+  display: block;
+  width: 52px;
+  height: 52px;
+  border: 1px solid rgba(199, 160, 75, .38);
+  padding: 3px;
+  object-fit: contain;
+  background: var(--white);
+  box-shadow: 0 10px 24px rgba(157, 71, 101, .12);
+}
+
 .brand strong,
 .brand small {
   display: block;
@@ -554,15 +565,21 @@ h4 {
 .signature-mark {
   display: grid;
   gap: 12px;
-  min-height: 220px;
+  min-height: 250px;
   align-content: center;
   border: 1px solid rgba(199, 160, 75, .38);
   border-radius: 8px;
-  padding: clamp(24px, 4vw, 44px);
+  padding: clamp(18px, 3vw, 34px);
   background:
     radial-gradient(circle at 18% 20%, rgba(244, 191, 209, .55), transparent 28%),
     linear-gradient(135deg, #fff, #fff4f8);
   box-shadow: var(--shadow);
+}
+
+.signature-mark img {
+  width: min(100%, 620px);
+  margin: 0 auto;
+  border-radius: 8px;
 }
 
 .signature-mark span {

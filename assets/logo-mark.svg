@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" role="img" aria-labelledby="title desc">
+  <title id="title">Jenny Delgado Centro Estética Láser</title>
+  <desc id="desc">Logo compacto con rostro lineal femenino y manchas nude y rosado pastel.</desc>
+  <rect width="420" height="420" fill="#fff"/>
+  <path d="M93 79c39-38 113-55 169-28 49 24 78 74 70 128-8 58-45 104-96 128-50 24-115 23-151-16-36-39-39-101-18-150 7-17 15-43 26-62z" fill="#f5e4cf"/>
+  <path d="M210 154c44-25 108-19 137 17 31 39 18 101-19 132-39 33-103 40-145 12-42-27-45-89-14-128 11-14 24-24 41-33z" fill="#f3a1bf"/>
+  <g fill="none" stroke="#111" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M139 106c31-21 70-18 96 10"/>
+    <path d="M150 132c30-11 56-7 79 12"/>
+    <path d="M169 132c6 22 29 29 52 14"/>
+    <path d="M190 145c-4-11 3-26 18-29"/>
+    <path d="M142 111c-6 48 1 86 23 116 11 16 19 28 20 47"/>
+    <path d="M230 151c-16 28-22 55-13 81"/>
+    <path d="M226 230c19-21 47-18 69 1"/>
+    <path d="M218 254c28 12 60 10 91-6"/>
+    <path d="M228 231c21 8 43 8 67 0"/>
+    <path d="M236 184c19-14 37-13 53 4"/>
+    <path d="M238 201c17 7 34 6 50-6"/>
+    <path d="M287 188c7 12 6 24-4 35"/>
+    <path d="M207 263c14 28 44 40 82 35"/>
+    <path d="M288 299c53-53 88-95 106-144"/>
+    <path d="M207 298c-5 37-14 69-30 96"/>
+  </g>
+</svg>
