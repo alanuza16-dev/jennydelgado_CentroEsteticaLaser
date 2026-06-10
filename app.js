@@ -19,12 +19,28 @@ const AREAS = {
       "Star Former Sculpt",
       "Arañitas / Telangiectasias"
     ],
-    slots: ["09:00", "10:30", "12:00", "14:30", "16:00", "17:00"]
+    slots: buildTimeSlots("09:00", "18:00", 30)
   }
 };
 
 const STORAGE_KEY = "jenny-laser-agenda-v1";
 const SESSION_KEY = "jenny-laser-session-v1";
+const SLOT_INTERVAL_MINUTES = 30;
+const SERVICE_DURATIONS = {
+  "Valoración estética": 60,
+  "Pure Skin Ritual": 120,
+  "Hydra Skin Therapy": 120,
+  "Age Reverse Facial": 120,
+  "Korean Glass Skin": 120,
+  "Dermapen Skin Booster": 120,
+  "Salmon DNA Repair": 120,
+  "Rejuvenecimiento facial Fotona": 120,
+  "Fotona4D": 120,
+  "Silk Skin Laser": 60,
+  "TightSculpting Fotona": 120,
+  "Star Former Sculpt": 60,
+  "Arañitas / Telangiectasias": 60
+};
 const DEMO_USERS = {
   "test": {
     type: "patient",
@@ -69,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function loadState() {
   const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) return JSON.parse(stored);
+  if (stored) return normalizeState(JSON.parse(stored));
 
   const today = new Date();
   const plus = (days) => {
@@ -83,9 +99,11 @@ function loadState() {
       {
         id: crypto.randomUUID(),
         area: "estetica",
-        service: "Rejuvenecimiento facial FOTONA 6D",
+        service: "Rejuvenecimiento facial Fotona",
         date: plus(2),
         time: "14:30",
+        duration: 120,
+        endTime: "16:30",
         name: "Cliente demo",
         phone: "+506 8777-0000",
         email: "cliente@demo.com",
@@ -110,6 +128,19 @@ function loadState() {
 
 function saveState(nextState = state) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+}
+
+function normalizeState(nextState) {
+  nextState.appointments = (nextState.appointments || []).map((item) => {
+    const duration = item.duration || getServiceDuration(item.service);
+    return {
+      ...item,
+      duration,
+      endTime: item.endTime || addMinutesToTime(item.time, duration)
+    };
+  });
+  nextState.blocks = nextState.blocks || [];
+  return nextState;
 }
 
 function seedControls() {
@@ -249,8 +280,10 @@ function renderSlots() {
   if (!$("#booking-area")) return;
   const area = $("#booking-area").value;
   const date = $("#booking-date").value;
+  const service = $("#booking-service").value;
+  const duration = getServiceDuration(service);
   const slots = AREAS[area].slots;
-  const availability = slots.map((time) => getSlotStatus(area, date, time));
+  const availability = slots.map((time) => getSlotStatus(area, date, time, duration));
   const available = availability.filter((slot) => slot.status === "available");
 
   $("#booking-time").innerHTML = available.length
@@ -260,7 +293,7 @@ function renderSlots() {
   $("#availability-title").textContent = `${AREAS[area].label} · ${formatDate(date)}`;
   $("#slot-list").innerHTML = availability
     .map((slot) => {
-      const label = slot.status === "available" ? "Disponible" : slot.status === "blocked" ? "Bloqueado" : "Ocupado";
+      const label = slot.status === "available" ? "Disponible" : slot.status === "outside" ? "No disponible" : slot.status === "blocked" ? "Bloqueado" : "Ocupado";
       const className = slot.status === "available" ? "" : slot.status === "blocked" ? "is-blocked" : "is-taken";
       const detail = slot.detail ? `<small>${slot.detail}</small>` : "";
       return `<div class="slot ${className}"><strong>${slot.time}</strong><span>${label}</span>${detail}</div>`;
@@ -400,11 +433,26 @@ function handleTimeChoice(event) {
   syncSlotSelection();
 }
 
-function getSlotStatus(area, date, time) {
-  const appointment = state.appointments.find((item) => item.area === area && item.date === date && item.time === time && item.status !== "cancelada");
+function getSlotStatus(area, date, time, duration = SLOT_INTERVAL_MINUTES) {
+  const start = timeToMinutes(time);
+  const end = start + duration;
+  const closing = timeToMinutes(AREAS[area].slots.at(-1)) + SLOT_INTERVAL_MINUTES;
+  if (end > closing) return { time, status: "outside", detail: "Fuera del horario" };
+
+  const appointment = state.appointments.find((item) => {
+    if (item.area !== area || item.date !== date || item.status === "cancelada") return false;
+    const itemStart = timeToMinutes(item.time);
+    const itemEnd = timeToMinutes(item.endTime || addMinutesToTime(item.time, item.duration || getServiceDuration(item.service)));
+    return intervalsOverlap(start, end, itemStart, itemEnd);
+  });
   if (appointment) return { time, status: "taken", detail: appointment.service };
 
-  const block = state.blocks.find((item) => item.area === area && item.date === date && item.time === time);
+  const block = state.blocks.find((item) => {
+    if (item.area !== area || item.date !== date) return false;
+    const blockStart = timeToMinutes(item.time);
+    const blockEnd = blockStart + (item.duration || SLOT_INTERVAL_MINUTES);
+    return intervalsOverlap(start, end, blockStart, blockEnd);
+  });
   if (block) return { time, status: "blocked", detail: block.reason || "No disponible" };
 
   return { time, status: "available" };
@@ -423,9 +471,12 @@ function createAppointment(event) {
   const area = $("#booking-area").value;
   const date = $("#booking-date").value;
   const time = $("#booking-time").value;
+  const service = $("#booking-service").value;
+  const duration = getServiceDuration(service);
+  const endTime = addMinutesToTime(time, duration);
   const phone = $("#patient-phone").value.trim();
 
-  if (!time || getSlotStatus(area, date, time).status !== "available") {
+  if (!time || getSlotStatus(area, date, time, duration).status !== "available") {
     showMessage("booking-message", "Ese espacio ya no está disponible. Seleccione otro horario.", true);
     renderSlots();
     return;
@@ -440,9 +491,11 @@ function createAppointment(event) {
   state.appointments.push({
     id: crypto.randomUUID(),
     area,
-    service: $("#booking-service").value,
+    service,
     date,
     time,
+    duration,
+    endTime,
     name: session.name,
     phone,
     email: session.email,
@@ -716,6 +769,7 @@ function renderAdmin() {
     .filter((item) => item.area === activeAdminArea)
     .sort(sortByDateTime);
   const activeAppointments = appointments.filter((item) => item.status !== "cancelada");
+  const activeMinutes = activeAppointments.reduce((total, item) => total + (item.duration || getServiceDuration(item.service)), 0);
   const blocks = state.blocks
     .filter((item) => item.area === activeAdminArea)
     .sort(sortByDateTime);
@@ -723,6 +777,7 @@ function renderAdmin() {
   $("#admin-summary").innerHTML = [
     ["Citas activas", activeAppointments.length],
     ["Canceladas", appointments.length - activeAppointments.length],
+    ["Horas reservadas", formatDuration(activeMinutes)],
     ["Bloqueos", blocks.length]
   ]
     .map(([label, value]) => `<div class="summary-item"><strong>${value}</strong><span>${label}</span></div>`)
@@ -746,14 +801,17 @@ function renderAdmin() {
 
 function renderAppointmentItem(item) {
   const inactive = item.status === "cancelada" ? " · cancelada" : "";
+  const duration = item.duration || getServiceDuration(item.service);
+  const endTime = item.endTime || addMinutesToTime(item.time, duration);
   const cancelButton = item.status === "cancelada"
     ? ""
     : `<button class="mini-button danger" data-cancel-appointment="${item.id}" type="button">Cancelar cita</button>`;
 
   return `
     <article class="admin-item">
-      <strong>${formatDate(item.date)} · ${item.time}${inactive}</strong>
+      <strong>${formatDate(item.date)} · ${item.time} - ${endTime}${inactive}</strong>
       <span>${item.name} · ${item.service}</span>
+      <small>Duración interna: ${formatDuration(duration)}</small>
       <small>${item.phone} · ${item.email}</small>
       ${item.note ? `<small>${item.note}</small>` : ""}
       <div class="item-actions">${cancelButton}</div>
@@ -837,6 +895,45 @@ function resetDemo() {
 
 function sortByDateTime(a, b) {
   return `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`);
+}
+
+function buildTimeSlots(startTime, endTime, interval = SLOT_INTERVAL_MINUTES) {
+  const slots = [];
+  for (let minutes = timeToMinutes(startTime); minutes < timeToMinutes(endTime); minutes += interval) {
+    slots.push(minutesToTime(minutes));
+  }
+  return slots;
+}
+
+function getServiceDuration(service = "") {
+  return SERVICE_DURATIONS[service] || 120;
+}
+
+function timeToMinutes(time = "00:00") {
+  const [hours, minutes] = time.split(":").map(Number);
+  return (hours * 60) + minutes;
+}
+
+function minutesToTime(totalMinutes) {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function addMinutesToTime(time, duration) {
+  return minutesToTime(timeToMinutes(time) + duration);
+}
+
+function intervalsOverlap(startA, endA, startB, endB) {
+  return startA < endB && endA > startB;
+}
+
+function formatDuration(minutes = 0) {
+  const hours = Math.floor(minutes / 60);
+  const remaining = minutes % 60;
+  if (!hours) return `${remaining} min`;
+  if (!remaining) return `${hours} h`;
+  return `${hours} h ${remaining} min`;
 }
 
 function toDateInput(date) {
