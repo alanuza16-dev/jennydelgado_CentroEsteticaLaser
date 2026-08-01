@@ -961,6 +961,15 @@ h3 {
   width: fit-content;
 }
 
+.developer-credit {
+  display: inline-block;
+  margin-top: 10px;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, .32);
+  text-underline-offset: 4px;
+}
+
 .brand-footer small {
   align-self: end;
   line-height: 1.5;
