@@ -6,7 +6,7 @@ Sitio estetico independiente para Jenny Delgado. Mantiene su propia marca, catal
 
 - `index.html`: landing usable con tratamientos, tecnologia Fotona, videos y precios.
 - `agenda.html`: solicitud de cita conectada a `/api/availability` y `/api/appointments`.
-- `login.html`, `admin.html`, `citas.html`: handoffs seguros sin usuarios demo ni agenda local.
+- `login.html`, `admin.html`, `citas.html`: handoffs seguros sin usuarios locales ni agenda en navegador.
 - `worker.js`: API de tratamientos, disponibilidad, solicitudes y consulta administrativa protegida.
 - `migrations/0001_create_appointments.sql`: tablas D1 para solicitudes y bloqueos.
 
