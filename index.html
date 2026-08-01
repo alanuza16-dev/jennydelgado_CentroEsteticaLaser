@@ -18,13 +18,47 @@
           <small>Centro Estética Láser</small>
         </span>
       </a>
-      <button class="mobile-menu-toggle" id="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">Menú</button>
+      <button class="mobile-menu-toggle" id="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Abrir menú">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </button>
       <nav class="main-nav" id="main-nav" aria-label="Navegación principal">
-        <a href="#tratamientos">Tratamientos</a>
-        <a href="#objetivos">Objetivos</a>
-        <a href="#precios">Precios</a>
-        <a href="agenda.html" class="nav-cta">Agendar</a>
-        <a href="https://dr-carazo-centro-laser.adminlanzah.workers.dev/">Dr. Carazo</a>
+        <div class="desktop-nav">
+          <a href="#tratamientos">Tratamientos</a>
+          <a href="#objetivos">Objetivos</a>
+          <a href="#precios">Precios</a>
+          <a href="agenda.html" class="nav-cta">Agendar</a>
+          <a href="https://dr-carazo-centro-laser.adminlanzah.workers.dev/">Dr. Carazo</a>
+        </div>
+        <div class="mobile-menu-shell" aria-label="Menú móvil">
+          <div class="mobile-menu-head">
+            <div>
+              <img class="brand-logo-mark" src="assets/logo-mark.svg" alt="">
+              <strong>Jenny Delgado</strong>
+              <small>Centro Estética Láser</small>
+            </div>
+            <button class="mobile-menu-close" type="button" data-close-menu aria-label="Cerrar menú">
+              <span aria-hidden="true"></span>
+              <span aria-hidden="true"></span>
+            </button>
+          </div>
+          <a class="mobile-menu-cta" href="agenda.html" data-close-menu>
+            <span>Citas</span>
+            <strong>Agendar valoración</strong>
+            <small>Selecciona tratamiento, fecha y hora</small>
+          </a>
+          <div class="mobile-menu-links">
+            <a href="index.html" aria-current="page" data-close-menu><span>01</span><strong>Inicio</strong><small>Portada</small></a>
+            <a href="#tratamientos" data-close-menu><span>02</span><strong>Tratamientos</strong><small>Facial, láser y corporal</small></a>
+            <a href="#objetivos" data-close-menu><span>03</span><strong>Objetivos</strong><small>Buscar por necesidad</small></a>
+            <a href="#precios" data-close-menu><span>04</span><strong>Precios</strong><small>Información clara</small></a>
+            <a href="#resultados" data-close-menu><span>05</span><strong>Resultados</strong><small>Antes y después autorizados</small></a>
+          </div>
+          <div class="mobile-menu-secondary">
+            <a href="agenda.html" data-close-menu>Mi cuenta</a>
+            <a href="https://dr-carazo-centro-laser.adminlanzah.workers.dev/" data-close-menu>Dr. Carazo</a>
+          </div>
+        </div>
       </nav>
     </header>
 
@@ -165,7 +199,7 @@
         </div>
       </section>
 
-      <section class="before-after-shell">
+      <section class="before-after-shell" id="resultados">
         <div class="reveal">
           <p class="eyebrow">Resultados</p>
           <h2>Módulo preparado para antes y después autorizados.</h2>
@@ -174,6 +208,11 @@
         <a class="button secondary" href="agenda.html">Agendar valoración</a>
       </section>
     </main>
+
+    <div class="mobile-bottom-bar" aria-label="Acciones rápidas">
+      <a href="agenda.html"><span>Agendar</span><strong>Valoración</strong></a>
+      <a href="agenda.html"><span>Mi cuenta</span><strong>Acceso</strong></a>
+    </div>
 
     <div class="video-modal" id="video-modal" hidden>
       <div class="video-modal-card">

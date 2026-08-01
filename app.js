@@ -67,6 +67,9 @@ const BEAUTY_GOALS = {
 };
 
 const $ = (selector) => document.querySelector(selector);
+const focusableSelector = "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])";
+let lastMenuTrigger = null;
+let bookingStep = 1;
 
 document.addEventListener("DOMContentLoaded", () => {
   bindNavigation();
@@ -79,6 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
   bindBookingForm();
   bindBookingSummary();
   loadAvailability();
+  initMobileBookingFlow();
 });
 
 function bindNavigation() {
@@ -91,14 +95,65 @@ function bindNavigation() {
     });
   }
 
-  $("#mobile-menu-toggle")?.addEventListener("click", () => {
-    const nav = $("#main-nav");
-    const button = $("#mobile-menu-toggle");
-    if (!nav || !button) return;
-    nav.toggleAttribute("data-open");
-    button.setAttribute("aria-expanded", String(nav.hasAttribute("data-open")));
-    document.body.classList.toggle("nav-open", nav.hasAttribute("data-open"));
+  const nav = $("#main-nav");
+  const button = $("#mobile-menu-toggle");
+  button?.addEventListener("click", toggleMobileMenu);
+  nav?.addEventListener("click", (event) => {
+    if (event.target === nav) closeMobileMenu();
+    if (event.target.closest("[data-close-menu]")) {
+      window.setTimeout(() => closeMobileMenu({ restoreFocus: false }), 0);
+    }
   });
+  nav?.addEventListener("keydown", trapMobileMenuFocus);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && document.body.classList.contains("nav-open")) closeMobileMenu();
+  });
+}
+
+function toggleMobileMenu() {
+  const nav = $("#main-nav");
+  if (!nav?.hasAttribute("data-open")) return openMobileMenu();
+  closeMobileMenu();
+}
+
+function openMobileMenu() {
+  const nav = $("#main-nav");
+  const button = $("#mobile-menu-toggle");
+  if (!nav || !button) return;
+  lastMenuTrigger = document.activeElement;
+  nav.setAttribute("data-open", "");
+  button.setAttribute("aria-expanded", "true");
+  button.setAttribute("aria-label", "Cerrar menú");
+  document.body.classList.add("nav-open");
+  window.requestAnimationFrame(() => nav.querySelector("[data-close-menu], a[href], button")?.focus());
+}
+
+function closeMobileMenu(options = {}) {
+  const nav = $("#main-nav");
+  const button = $("#mobile-menu-toggle");
+  if (!nav || !button) return;
+  nav.removeAttribute("data-open");
+  button.setAttribute("aria-expanded", "false");
+  button.setAttribute("aria-label", "Abrir menú");
+  document.body.classList.remove("nav-open");
+  if (options.restoreFocus !== false) (lastMenuTrigger || button).focus?.();
+}
+
+function trapMobileMenuFocus(event) {
+  if (event.key !== "Tab" || !document.body.classList.contains("nav-open")) return;
+  const nav = $("#main-nav");
+  const items = Array.from(nav?.querySelectorAll(focusableSelector) || [])
+    .filter((item) => item.offsetParent !== null);
+  if (!items.length) return;
+  const first = items[0];
+  const last = items[items.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
 }
 
 function bindHeaderScroll() {
@@ -218,12 +273,71 @@ function bindBookingForm() {
       updateBookingSummary();
       showNotice(result.message || "Solicitud registrada. Te contactaremos para confirmar.", false);
       await loadAvailability();
+      setBookingStep(5);
     } catch (error) {
       showNotice(error.message || "No se pudo conectar con la agenda. Intenta de nuevo.", true);
     } finally {
       submitButton.disabled = false;
     }
   });
+}
+
+function initMobileBookingFlow() {
+  const form = $("#booking-form");
+  if (!form) return;
+  $("#booking-prev")?.addEventListener("click", () => setBookingStep(Math.max(1, bookingStep - 1)));
+  $("#booking-next")?.addEventListener("click", () => {
+    if (!validateBookingStep(bookingStep)) return;
+    if (bookingStep >= 4) {
+      form.requestSubmit();
+      return;
+    }
+    setBookingStep(bookingStep + 1);
+  });
+  form.addEventListener("change", () => updateBookingStepControls());
+  setBookingStep(1);
+}
+
+function setBookingStep(step) {
+  const form = $("#booking-form");
+  if (!form) return;
+  bookingStep = Math.min(5, Math.max(1, Number(step) || 1));
+  form.dataset.bookingStep = String(bookingStep);
+  document.querySelectorAll("[data-progress-step]").forEach((item) => {
+    const itemStep = Number(item.dataset.progressStep);
+    item.classList.toggle("is-active", itemStep === bookingStep);
+    item.classList.toggle("is-complete", itemStep < bookingStep);
+  });
+  updateBookingStepControls();
+  if (window.matchMedia("(max-width: 760px)").matches) {
+    form.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function updateBookingStepControls() {
+  const prev = $("#booking-prev");
+  const next = $("#booking-next");
+  if (prev) prev.disabled = bookingStep <= 1 || bookingStep >= 5;
+  if (next) {
+    next.hidden = bookingStep >= 5;
+    next.textContent = bookingStep >= 4 ? "Solicitar confirmación" : "Continuar";
+  }
+}
+
+function validateBookingStep(step) {
+  if (step === 1 && !$("#booking-service")?.value) {
+    showNotice("Selecciona un tratamiento para continuar.", true);
+    return false;
+  }
+  if (step === 2 && !$("#booking-date")?.value) {
+    showNotice("Selecciona una fecha para continuar.", true);
+    return false;
+  }
+  if (step === 3 && !document.querySelector("[name='time']:checked")) {
+    showNotice("Selecciona una hora disponible para continuar.", true);
+    return false;
+  }
+  return true;
 }
 
 async function loadAvailability() {

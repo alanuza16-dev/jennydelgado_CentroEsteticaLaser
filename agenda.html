@@ -17,13 +17,47 @@
           <small>Centro Estética Láser</small>
         </span>
       </a>
-      <button class="mobile-menu-toggle" id="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">Menú</button>
+      <button class="mobile-menu-toggle" id="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Abrir menú">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </button>
       <nav class="main-nav" id="main-nav" aria-label="Navegación principal">
-        <a href="index.html">Inicio</a>
-        <a href="index.html#tratamientos">Tratamientos</a>
-        <a href="index.html#precios">Precios</a>
-        <a href="agenda.html" class="nav-cta">Agendar</a>
-        <a href="https://dr-carazo-centro-laser.adminlanzah.workers.dev/">Dr. Carazo</a>
+        <div class="desktop-nav">
+          <a href="index.html">Inicio</a>
+          <a href="index.html#tratamientos">Tratamientos</a>
+          <a href="index.html#precios">Precios</a>
+          <a href="agenda.html" class="nav-cta">Agendar</a>
+          <a href="https://dr-carazo-centro-laser.adminlanzah.workers.dev/">Dr. Carazo</a>
+        </div>
+        <div class="mobile-menu-shell" aria-label="Menú móvil">
+          <div class="mobile-menu-head">
+            <div>
+              <img class="brand-logo-mark" src="assets/logo-mark.svg" alt="">
+              <strong>Jenny Delgado</strong>
+              <small>Centro Estética Láser</small>
+            </div>
+            <button class="mobile-menu-close" type="button" data-close-menu aria-label="Cerrar menú">
+              <span aria-hidden="true"></span>
+              <span aria-hidden="true"></span>
+            </button>
+          </div>
+          <a class="mobile-menu-cta" href="agenda.html" data-close-menu>
+            <span>Citas</span>
+            <strong>Agendar valoración</strong>
+            <small>Continúa tu solicitud guiada</small>
+          </a>
+          <div class="mobile-menu-links">
+            <a href="index.html" data-close-menu><span>01</span><strong>Inicio</strong><small>Portada</small></a>
+            <a href="index.html#tratamientos" data-close-menu><span>02</span><strong>Tratamientos</strong><small>Facial, láser y corporal</small></a>
+            <a href="index.html#objetivos" data-close-menu><span>03</span><strong>Objetivos</strong><small>Buscar por necesidad</small></a>
+            <a href="index.html#precios" data-close-menu><span>04</span><strong>Precios</strong><small>Información clara</small></a>
+            <a href="agenda.html" aria-current="page" data-close-menu><span>05</span><strong>Agenda</strong><small>Solicitud paso a paso</small></a>
+          </div>
+          <div class="mobile-menu-secondary">
+            <a href="agenda.html" data-close-menu>Mi cuenta</a>
+            <a href="https://dr-carazo-centro-laser.adminlanzah.workers.dev/" data-close-menu>Dr. Carazo</a>
+          </div>
+        </div>
       </nav>
     </header>
 
@@ -37,15 +71,15 @@
       </section>
 
       <section class="booking-app section">
-        <form class="booking-card" id="booking-form">
+        <form class="booking-card" id="booking-form" data-booking-step="1">
           <div class="booking-progress" aria-label="Pasos de solicitud">
-            <span>01 Tratamiento</span>
-            <span>02 Fecha</span>
-            <span>03 Hora</span>
-            <span>04 Datos</span>
+            <span data-progress-step="1">01 Tratamiento</span>
+            <span data-progress-step="2">02 Fecha</span>
+            <span data-progress-step="3">03 Hora</span>
+            <span data-progress-step="4">04 Datos</span>
           </div>
 
-          <section class="booking-step">
+          <section class="booking-step" data-step-panel="1">
             <p class="eyebrow">Paso 01</p>
             <h2>Selecciona el tratamiento</h2>
             <label>
@@ -55,7 +89,7 @@
             <p class="field-help">El precio y duración se muestran en el resumen. La recomendación final se confirma en valoración.</p>
           </section>
 
-          <section class="booking-step">
+          <section class="booking-step" data-step-panel="2">
             <p class="eyebrow">Paso 02</p>
             <h2>Elige una fecha</h2>
             <label>
@@ -65,7 +99,7 @@
             <p class="field-help">Para cambios de último momento, el equipo confirmará opciones cercanas.</p>
           </section>
 
-          <section class="booking-step">
+          <section class="booking-step" data-step-panel="3">
             <p class="eyebrow">Paso 03</p>
             <h2>Selecciona una hora disponible</h2>
             <fieldset>
@@ -74,7 +108,7 @@
             </fieldset>
           </section>
 
-          <section class="booking-step">
+          <section class="booking-step" data-step-panel="4">
             <p class="eyebrow">Paso 04</p>
             <h2>Datos de contacto</h2>
             <div class="form-grid">
@@ -97,8 +131,18 @@
             </div>
           </section>
 
+          <section class="booking-step booking-result" data-step-panel="5">
+            <p class="eyebrow">Resultado</p>
+            <h2>Solicitud recibida</h2>
+            <p class="field-help">El equipo revisará disponibilidad real y te contactará para confirmar, ajustar o reprogramar si es necesario.</p>
+          </section>
+
           <p class="form-notice" id="form-notice" hidden></p>
-          <button class="button primary wide" type="submit">Solicitar confirmación</button>
+          <div class="booking-mobile-controls">
+            <button class="button secondary" id="booking-prev" type="button">Atrás</button>
+            <button class="button primary" id="booking-next" type="button">Continuar</button>
+          </div>
+          <button class="button primary wide booking-submit" type="submit">Solicitar confirmación</button>
         </form>
 
         <aside class="booking-summary" aria-label="Resumen de cita">
@@ -114,6 +158,11 @@
         </aside>
       </section>
     </main>
+
+    <div class="mobile-bottom-bar" aria-label="Acciones rápidas">
+      <a href="agenda.html"><span>Agendar</span><strong>Valoración</strong></a>
+      <a href="agenda.html"><span>Mi cuenta</span><strong>Acceso</strong></a>
+    </div>
 
     <footer class="brand-footer">
       <div class="footer-brand">
