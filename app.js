@@ -21,14 +21,63 @@ const TREATMENTS = [
   { name: "Aranitas / Telangiectasias", category: "Vascular", price: "Segun valoracion", duration: 60 }
 ];
 
+const BEAUTY_GOALS = {
+  luminosidad: {
+    label: "Luminosidad",
+    title: "Korean Glass Skin",
+    copy: "Protocolo orientado a luminosidad, textura uniforme y acabado radiante.",
+    price: "Desde CRC 40.000",
+    duration: "Duracion aproximada: 120 min"
+  },
+  textura: {
+    label: "Textura",
+    title: "Dermapen Skin Booster",
+    copy: "Microneedling para mejorar textura, poros, lineas finas e hidratacion.",
+    price: "Desde CRC 45.000",
+    duration: "Duracion aproximada: 120 min"
+  },
+  rejuvenecimiento: {
+    label: "Rejuvenecimiento",
+    title: "Fotona Total Rejuvenation",
+    copy: "Laser Fotona para trabajar firmeza, textura y luminosidad con protocolo personalizado.",
+    price: "CRC 350.000",
+    duration: "Duracion aproximada: 120 min"
+  },
+  firmeza: {
+    label: "Firmeza corporal",
+    title: "TightSculpting Fotona",
+    copy: "Tratamiento no invasivo para tensar piel y apoyar remodelacion corporal.",
+    price: "Segun valoracion",
+    duration: "Duracion aproximada: 120 min"
+  },
+  vello: {
+    label: "Vello",
+    title: "Silk Skin Laser",
+    copy: "Reduccion progresiva del vello con enfoque en seguridad y precision.",
+    price: "Desde CRC 50.000",
+    duration: "Duracion aproximada: 60 min"
+  },
+  vascular: {
+    label: "Lesiones vasculares",
+    title: "Aranitas / Telangiectasias",
+    copy: "Tratamiento laser enfocado en venitas visibles y lesiones vasculares superficiales.",
+    price: "Segun valoracion",
+    duration: "Duracion aproximada: 60 min"
+  }
+};
+
 const $ = (selector) => document.querySelector(selector);
 
 document.addEventListener("DOMContentLoaded", () => {
   bindNavigation();
   bindVideos();
+  bindHeaderScroll();
+  initReveal();
+  bindBeautyGoals();
   hydrateTreatmentSelect();
   hydrateToday();
   bindBookingForm();
+  bindBookingSummary();
   loadAvailability();
 });
 
@@ -48,7 +97,53 @@ function bindNavigation() {
     if (!nav || !button) return;
     nav.toggleAttribute("data-open");
     button.setAttribute("aria-expanded", String(nav.hasAttribute("data-open")));
+    document.body.classList.toggle("nav-open", nav.hasAttribute("data-open"));
   });
+}
+
+function bindHeaderScroll() {
+  const header = $(".site-header");
+  if (!header) return;
+  const sync = () => header.toggleAttribute("data-condensed", window.scrollY > 24);
+  sync();
+  window.addEventListener("scroll", sync, { passive: true });
+}
+
+function initReveal() {
+  const items = document.querySelectorAll(".reveal");
+  if (!items.length) return;
+  if (!("IntersectionObserver" in window)) {
+    items.forEach((item) => item.classList.add("is-visible"));
+    return;
+  }
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.16 });
+  items.forEach((item) => observer.observe(item));
+}
+
+function bindBeautyGoals() {
+  document.querySelectorAll("[data-beauty-goal]").forEach((button) => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll("[data-beauty-goal]").forEach((item) => item.classList.toggle("is-active", item === button));
+      renderBeautyGoal(button.dataset.beautyGoal);
+    });
+  });
+}
+
+function renderBeautyGoal(key) {
+  const goal = BEAUTY_GOALS[key] || BEAUTY_GOALS.luminosidad;
+  if ($("#beauty-goal-label")) $("#beauty-goal-label").textContent = goal.label;
+  if ($("#beauty-goal-title")) $("#beauty-goal-title").textContent = goal.title;
+  if ($("#beauty-goal-copy")) $("#beauty-goal-copy").textContent = goal.copy;
+  if ($("#beauty-goal-price")) $("#beauty-goal-price").textContent = goal.price;
+  if ($("#beauty-goal-duration")) $("#beauty-goal-duration").textContent = goal.duration;
+  if ($("#beauty-goal-link")) $("#beauty-goal-link").href = `agenda.html?service=${encodeURIComponent(goal.title)}`;
 }
 
 function bindVideos() {
@@ -67,7 +162,14 @@ function hydrateTreatmentSelect() {
   select.innerHTML = TREATMENTS
     .map((item) => `<option value="${escapeHtml(item.name)}">${escapeHtml(item.name)} - ${escapeHtml(item.price)}</option>`)
     .join("");
+  const params = new URLSearchParams(window.location.search);
+  const requestedService = params.get("service");
+  if (requestedService && TREATMENTS.some((item) => item.name === requestedService)) {
+    select.value = requestedService;
+  }
   select.addEventListener("change", loadAvailability);
+  select.addEventListener("change", updateBookingSummary);
+  updateBookingSummary();
 }
 
 function hydrateToday() {
@@ -77,6 +179,12 @@ function hydrateToday() {
   date.min = today;
   date.value = today;
   date.addEventListener("change", loadAvailability);
+  date.addEventListener("change", updateBookingSummary);
+}
+
+function bindBookingSummary() {
+  $("#slot-list")?.addEventListener("change", updateBookingSummary);
+  updateBookingSummary();
 }
 
 function bindBookingForm() {
@@ -107,6 +215,7 @@ function bindBookingForm() {
       if (!response.ok) throw new Error(result.message || "No se pudo guardar la cita.");
       form.reset();
       hydrateToday();
+      updateBookingSummary();
       showNotice(result.message || "Solicitud registrada. Te contactaremos para confirmar.", false);
       await loadAvailability();
     } catch (error) {
@@ -150,6 +259,7 @@ function renderSlots(slots) {
       <span>${slot.time}</span>
     </label>
   `).join("");
+  updateBookingSummary();
 }
 
 function showNotice(message, isError) {
@@ -158,6 +268,18 @@ function showNotice(message, isError) {
   notice.textContent = message;
   notice.classList.toggle("is-error", Boolean(isError));
   notice.hidden = false;
+}
+
+function updateBookingSummary() {
+  const serviceName = $("#booking-service")?.value || TREATMENTS[0].name;
+  const treatment = TREATMENTS.find((item) => item.name === serviceName) || TREATMENTS[0];
+  const date = $("#booking-date")?.value || "";
+  const time = document.querySelector("[name='time']:checked")?.value || "";
+  if ($("#summary-service")) $("#summary-service").textContent = treatment.name;
+  if ($("#summary-price")) $("#summary-price").textContent = treatment.price;
+  if ($("#summary-duration")) $("#summary-duration").textContent = `${treatment.duration} min aprox.`;
+  if ($("#summary-date")) $("#summary-date").textContent = date ? formatDate(date) : "Selecciona una fecha";
+  if ($("#summary-time")) $("#summary-time").textContent = time || "Selecciona una hora";
 }
 
 function openVideoModal(videoId, title = "Video informativo") {
@@ -180,6 +302,12 @@ function closeVideoModal() {
 
 function toDateInput(date) {
   return date.toISOString().slice(0, 10);
+}
+
+function formatDate(value) {
+  const [year, month, day] = String(value).split("-").map(Number);
+  if (!year || !month || !day) return value;
+  return new Intl.DateTimeFormat("es-CR", { weekday: "short", day: "numeric", month: "short" }).format(new Date(year, month - 1, day));
 }
 
 function escapeHtml(value) {

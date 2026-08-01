@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="styles.css">
     <script defer src="app.js"></script>
   </head>
-  <body>
+  <body class="brand-jenny booking-page">
     <header class="site-header">
       <a class="brand" href="index.html" aria-label="Ir al inicio">
         <img class="brand-logo-mark" src="assets/logo-mark.svg" alt="">
@@ -20,76 +20,112 @@
       <button class="mobile-menu-toggle" id="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">Menu</button>
       <nav class="main-nav" id="main-nav" aria-label="Navegacion principal">
         <a href="index.html">Inicio</a>
-        <a href="index.html?section=tratamientos">Tratamientos</a>
-        <a href="index.html?section=precios">Precios</a>
-        <a href="agenda.html">Agendar</a>
+        <a href="index.html#tratamientos">Tratamientos</a>
+        <a href="index.html#precios">Precios</a>
+        <a href="agenda.html" class="nav-cta">Agendar</a>
         <a href="https://dr-carazo-centro-laser.adminlanzah.workers.dev/">Dr. Carazo</a>
       </nav>
     </header>
 
     <main>
-      <section class="detail-hero compact">
-        <div>
-          <p class="eyebrow">Agenda propia</p>
-          <h1>Solicita tu cita estetica.</h1>
-          <p>Selecciona servicio, fecha y horario. La solicitud se guarda en D1 y el equipo te contactara para confirmar.</p>
+      <section class="booking-hero">
+        <div class="reveal">
+          <p class="eyebrow">Agenda de valoracion</p>
+          <h1>Reserva tu espacio con una experiencia guiada.</h1>
+          <p>Selecciona tratamiento, fecha, hora y tus datos de contacto. El equipo te contactara para confirmar los detalles.</p>
         </div>
       </section>
 
-      <section class="section booking-section">
+      <section class="booking-app section">
         <form class="booking-card" id="booking-form">
-          <div class="section-heading compact-heading">
-            <p class="eyebrow">Detalles</p>
-            <h2>Datos de la cita</h2>
+          <div class="booking-progress" aria-label="Pasos de solicitud">
+            <span>01 Tratamiento</span>
+            <span>02 Fecha</span>
+            <span>03 Hora</span>
+            <span>04 Datos</span>
           </div>
-          <label>
-            <span>Servicio</span>
-            <select id="booking-service" name="service" required></select>
-          </label>
-          <label>
-            <span>Fecha</span>
-            <input id="booking-date" name="date" type="date" required>
-          </label>
-          <fieldset>
-            <legend>Horarios disponibles</legend>
-            <div class="slot-list" id="slot-list"></div>
-          </fieldset>
-          <label>
-            <span>Nombre completo</span>
-            <input name="name" type="text" autocomplete="name" required>
-          </label>
-          <label>
-            <span>Telefono</span>
-            <input name="phone" type="tel" autocomplete="tel" required>
-          </label>
-          <label>
-            <span>Correo</span>
-            <input name="email" type="email" autocomplete="email">
-          </label>
-          <label>
-            <span>Nota opcional</span>
-            <input name="note" type="text" maxlength="300" placeholder="Ej. Primera vez, zona a tratar, horario ideal">
-          </label>
+
+          <section class="booking-step">
+            <p class="eyebrow">Paso 01</p>
+            <h2>Selecciona el tratamiento</h2>
+            <label>
+              <span>Servicio</span>
+              <select id="booking-service" name="service" required></select>
+            </label>
+            <p class="field-help">El precio y duracion se muestran en el resumen. La recomendacion final se confirma en valoracion.</p>
+          </section>
+
+          <section class="booking-step">
+            <p class="eyebrow">Paso 02</p>
+            <h2>Elige una fecha</h2>
+            <label>
+              <span>Fecha</span>
+              <input id="booking-date" name="date" type="date" required>
+            </label>
+            <p class="field-help">Para cambios de ultimo momento, el equipo confirmara opciones cercanas.</p>
+          </section>
+
+          <section class="booking-step">
+            <p class="eyebrow">Paso 03</p>
+            <h2>Selecciona una hora disponible</h2>
+            <fieldset>
+              <legend>Horarios disponibles</legend>
+              <div class="slot-list" id="slot-list"></div>
+            </fieldset>
+          </section>
+
+          <section class="booking-step">
+            <p class="eyebrow">Paso 04</p>
+            <h2>Datos de contacto</h2>
+            <div class="form-grid">
+              <label>
+                <span>Nombre completo</span>
+                <input name="name" type="text" autocomplete="name" required>
+              </label>
+              <label>
+                <span>Telefono</span>
+                <input name="phone" type="tel" autocomplete="tel" required>
+              </label>
+              <label>
+                <span>Correo</span>
+                <input name="email" type="email" autocomplete="email">
+              </label>
+              <label>
+                <span>Nota opcional</span>
+                <input name="note" type="text" maxlength="300" placeholder="Zona a tratar, primera vez u horario ideal">
+              </label>
+            </div>
+          </section>
+
           <p class="form-notice" id="form-notice" hidden></p>
-          <button class="button primary wide" type="submit">Solicitar cita</button>
+          <button class="button primary wide" type="submit">Solicitar confirmacion</button>
         </form>
 
-        <aside class="booking-side">
-          <p class="eyebrow">Confirmacion</p>
-          <h2>Te contactaremos para confirmar los detalles.</h2>
-          <p>Al enviar la solicitud, el equipo de Jenny Delgado revisa el servicio, la fecha y el horario seleccionado para confirmar disponibilidad o proponerte una alternativa cercana.</p>
-          <ul class="check-list">
-            <li>Recibimos tus datos de contacto para dar seguimiento.</li>
-            <li>El horario queda sujeto a confirmacion del equipo.</li>
-            <li>Si necesitas otra zona o combinacion de tratamientos, indicalo en la nota.</li>
-          </ul>
+        <aside class="booking-summary" aria-label="Resumen de cita">
+          <p class="eyebrow">Resumen</p>
+          <h2 id="summary-service">Pure Skin Ritual</h2>
+          <dl>
+            <div><dt>Precio</dt><dd id="summary-price">CRC 35.000</dd></div>
+            <div><dt>Duracion</dt><dd id="summary-duration">120 min aprox.</dd></div>
+            <div><dt>Fecha</dt><dd id="summary-date">Selecciona una fecha</dd></div>
+            <div><dt>Hora</dt><dd id="summary-time">Selecciona una hora</dd></div>
+          </dl>
+          <p>El horario queda sujeto a confirmacion del equipo. Si buscas combinar zonas o tratamientos, indicalo en la nota.</p>
         </aside>
       </section>
     </main>
 
-    <footer class="site-footer">
-      <p>&copy; 2026 Jenny Delgado Centro Estetica Laser.</p>
-      <p>Agenda propia con Cloudflare Workers y D1.</p>
+    <footer class="brand-footer">
+      <div>
+        <strong>Jenny Delgado</strong>
+        <p>Centro Estetica Laser con tratamientos personalizados y seguimiento humano.</p>
+      </div>
+      <nav aria-label="Navegacion secundaria">
+        <a href="index.html#tratamientos">Tratamientos</a>
+        <a href="index.html#precios">Precios</a>
+        <a href="agenda.html">Agendar</a>
+      </nav>
+      <small>&copy; 2026 Jenny Delgado Centro Estetica Laser.</small>
     </footer>
   </body>
 </html>
