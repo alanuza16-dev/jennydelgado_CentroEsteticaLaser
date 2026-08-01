@@ -1008,8 +1008,8 @@ h3 {
 }
 
 .reveal {
-  opacity: 0;
-  transform: translateY(18px);
+  opacity: 1;
+  transform: translateY(0);
   transition: opacity var(--slow) var(--ease), transform var(--slow) var(--ease);
 }
 
