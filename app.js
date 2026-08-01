@@ -1,719 +1,173 @@
-const AREAS = {
-  estetica: {
-    label: "Centro LASER de Estética",
-    doctor: "Jenny Delgado",
-    pin: "laser2026",
-    password: "123456",
-    services: [
-      "Valoración estética",
-      "Pure Skin Ritual",
-      "Hydra Skin Therapy",
-      "Age Reverse Facial",
-      "Korean Glass Skin",
-      "Dermapen Skin Booster",
-      "Salmon DNA Repair",
-      "Rejuvenecimiento facial Fotona",
-      "Fotona4D",
-      "Silk Skin Laser",
-      "TightSculpting Fotona",
-      "Star Former Sculpt",
-      "Arañitas / Telangiectasias"
-    ],
-    slots: buildTimeSlots("09:00", "18:00", 30)
-  }
-};
+const API_BASE = "/api";
 
-const STORAGE_KEY = "jenny-laser-agenda-v1";
-const SESSION_KEY = "jenny-laser-session-v1";
-const SLOT_INTERVAL_MINUTES = 30;
-const SERVICE_DURATIONS = {
-  "Valoración estética": 60,
-  "Pure Skin Ritual": 120,
-  "Hydra Skin Therapy": 120,
-  "Age Reverse Facial": 120,
-  "Korean Glass Skin": 120,
-  "Dermapen Skin Booster": 120,
-  "Salmon DNA Repair": 120,
-  "Rejuvenecimiento facial Fotona": 120,
-  "Fotona4D": 120,
-  "Silk Skin Laser": 60,
-  "TightSculpting Fotona": 120,
-  "Star Former Sculpt": 60,
-  "Arañitas / Telangiectasias": 60
-};
-const DEMO_USERS = {
-  "test": {
-    type: "patient",
-    name: "Test",
-    password: "123456"
-  },
-  "admin1": {
-    type: "admin",
-    area: "estetica",
-    name: "Admin Estética",
-    password: "123456"
-  }
-};
+const TREATMENTS = [
+  { name: "Pure Skin Ritual", category: "Facial signature", price: "CRC 35.000", duration: 120 },
+  { name: "Hydra Skin Therapy", category: "Facial signature", price: "CRC 35.000", duration: 120 },
+  { name: "Age Reverse Facial", category: "Facial signature", price: "CRC 40.000", duration: 120 },
+  { name: "Korean Glass Skin", category: "Facial signature", price: "CRC 40.000", duration: 120 },
+  { name: "Dermapen Skin Booster", category: "Microneedling", price: "CRC 45.000", duration: 120 },
+  { name: "Dermapen paquete 5 sesiones", category: "Paquete", price: "CRC 180.000", duration: 120 },
+  { name: "Salmon DNA Repair paquete 5 sesiones", category: "Paquete", price: "CRC 280.000", duration: 120 },
+  { name: "Bridal Glow Experience", category: "Evento", price: "CRC 100.000", duration: 120 },
+  { name: "Fotona Total Rejuvenation", category: "Laser Fotona", price: "CRC 350.000", duration: 120 },
+  { name: "Silk Skin Laser", category: "Depilacion laser", price: "Desde CRC 50.000", duration: 60 },
+  { name: "Star Former Sculpt", category: "Corporal", price: "CRC 50.000", duration: 60 },
+  { name: "Bikini completo + axilas", category: "Depilacion laser", price: "CRC 50.000", duration: 60 },
+  { name: "Bikini completo + media pierna + axilas", category: "Depilacion laser", price: "CRC 75.000", duration: 90 },
+  { name: "Bikini completo + pierna completa + axilas + bigote", category: "Depilacion laser", price: "CRC 100.000", duration: 120 },
+  { name: "Espalda hombre", category: "Depilacion laser", price: "CRC 50.000", duration: 60 },
+  { name: "Pecho hombre", category: "Depilacion laser", price: "CRC 50.000", duration: 60 },
+  { name: "TightSculpting Fotona", category: "Corporal", price: "Segun valoracion", duration: 120 },
+  { name: "Aranitas / Telangiectasias", category: "Vascular", price: "Segun valoracion", duration: 60 }
+];
 
 const $ = (selector) => document.querySelector(selector);
 
-const state = loadState();
-let activeAdminArea = null;
-let loginMode = "create";
-let activeCalendarMonth = new Date();
-
 document.addEventListener("DOMContentLoaded", () => {
-  handleSectionNavigation();
-  hydrateLoginModeFromUrl();
-  seedControls();
-  setDefaultDates();
-  hydrateSessionUI();
-  renderAccountWidget();
-  guardBookingPage();
-  if ($("#booking-form")) {
-    renderServices();
-    renderSlots();
-    renderAreaChoices();
-    renderDateChoices();
-  }
-  renderPatientAppointments();
-  if ($("#admin-panel")) {
-    initAdminPage();
-  }
-  bindEvents();
+  bindNavigation();
+  bindVideos();
+  hydrateTreatmentSelect();
+  hydrateToday();
+  bindBookingForm();
+  loadAvailability();
 });
 
-function loadState() {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) return normalizeState(JSON.parse(stored));
+function bindNavigation() {
+  const params = new URLSearchParams(window.location.search);
+  const section = params.get("section") || window.location.hash.replace("#", "");
+  if (section) {
+    window.requestAnimationFrame(() => {
+      document.getElementById(section)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (params.get("section")) window.history.replaceState(null, "", window.location.pathname);
+    });
+  }
 
-  const today = new Date();
-  const plus = (days) => {
-    const date = new Date(today);
-    date.setDate(today.getDate() + days);
-    return toDateInput(date);
-  };
-
-  const initial = {
-    appointments: [
-      {
-        id: crypto.randomUUID(),
-        area: "estetica",
-        service: "Rejuvenecimiento facial Fotona",
-        date: plus(2),
-        time: "14:30",
-        duration: 120,
-        endTime: "16:30",
-        name: "Cliente demo",
-        phone: "+506 8777-0000",
-        email: "cliente@demo.com",
-        note: "Desea valoración facial.",
-        status: "confirmada",
-        createdAt: new Date().toISOString()
-      }
-    ],
-    blocks: [
-      {
-        id: crypto.randomUUID(),
-        area: "estetica",
-        date: plus(4),
-        time: "16:00",
-        reason: "Capacitación"
-      }
-    ]
-  };
-  saveState(initial);
-  return initial;
-}
-
-function saveState(nextState = state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
-}
-
-function normalizeState(nextState) {
-  nextState.appointments = (nextState.appointments || []).map((item) => {
-    const duration = item.duration || getServiceDuration(item.service);
-    return {
-      ...item,
-      duration,
-      endTime: item.endTime || addMinutesToTime(item.time, duration)
-    };
+  $("#mobile-menu-toggle")?.addEventListener("click", () => {
+    const nav = $("#main-nav");
+    const button = $("#mobile-menu-toggle");
+    if (!nav || !button) return;
+    nav.toggleAttribute("data-open");
+    button.setAttribute("aria-expanded", String(nav.hasAttribute("data-open")));
   });
-  nextState.blocks = nextState.blocks || [];
-  return nextState;
 }
 
-function seedControls() {
-  const areaOptions = Object.entries(AREAS)
-    .map(([value, area]) => `<option value="${value}">${area.label}</option>`)
-    .join("");
-
-  if ($("#booking-area")) $("#booking-area").innerHTML = areaOptions;
-  if ($("#admin-area")) $("#admin-area").innerHTML = areaOptions;
-  if ($("#block-time")) {
-    $("#block-time").innerHTML = AREAS.estetica.slots
-      .map((time) => `<option value="${time}">${time}</option>`)
-      .join("");
-  }
-}
-
-function setDefaultDates() {
-  const today = toDateInput(new Date());
-  if ($("#booking-date")) {
-    $("#booking-date").min = today;
-    $("#booking-date").value = today;
-  }
-  if ($("#block-date")) {
-    $("#block-date").min = today;
-    $("#block-date").value = today;
-  }
-}
-
-function bindEvents() {
-  if ($("#unified-login-form")) $("#unified-login-form").addEventListener("submit", loginUser);
-  if ($("#admin-logout")) $("#admin-logout").addEventListener("click", logoutUser);
-  if ($("#patient-logout")) $("#patient-logout").addEventListener("click", logoutUser);
-  if ($("#booking-area")) $("#booking-area").addEventListener("change", () => {
-    renderServices();
-    renderSlots();
-  });
-  if ($("#booking-service")) $("#booking-service").addEventListener("change", renderSlots);
-  if ($("#booking-date")) $("#booking-date").addEventListener("change", renderSlots);
-  if ($("#booking-time")) $("#booking-time").addEventListener("change", syncSlotSelection);
-  if ($("#booking-form")) $("#booking-form").addEventListener("submit", createAppointment);
-  if ($("#area-choice")) $("#area-choice").addEventListener("click", handleAreaChoice);
-  if ($("#service-choice")) $("#service-choice").addEventListener("click", handleServiceChoice);
-  if ($("#date-choice")) $("#date-choice").addEventListener("click", handleDateChoice);
-  if ($("#prev-month")) $("#prev-month").addEventListener("click", () => changeCalendarMonth(-1));
-  if ($("#next-month")) $("#next-month").addEventListener("click", () => changeCalendarMonth(1));
-  if ($("#time-choice")) $("#time-choice").addEventListener("click", handleTimeChoice);
-  if ($("#admin-area")) $("#admin-area").addEventListener("change", updateBlockTimesFromAdminSelection);
-  if ($("#block-slot")) $("#block-slot").addEventListener("click", blockSlot);
-  if ($("#seed-reset")) $("#seed-reset").addEventListener("click", resetDemo);
-  if ($("#profile-menu-toggle")) $("#profile-menu-toggle").addEventListener("click", toggleProfileMenu);
+function bindVideos() {
   document.querySelectorAll("[data-video]").forEach((button) => {
     button.addEventListener("click", () => openVideoModal(button.dataset.video, button.dataset.title));
   });
-  bindCarouselHover();
-  if ($("#video-modal-close")) $("#video-modal-close").addEventListener("click", closeVideoModal);
-  if ($("#video-modal")) $("#video-modal").addEventListener("click", (event) => {
+  $("#video-modal-close")?.addEventListener("click", closeVideoModal);
+  $("#video-modal")?.addEventListener("click", (event) => {
     if (event.target.id === "video-modal") closeVideoModal();
   });
-  document.addEventListener("click", closeProfileMenu);
 }
 
-function handleSectionNavigation() {
-  const params = new URLSearchParams(window.location.search);
-  const section = params.get("section") || window.location.hash.replace("#", "");
-  if (!section) return;
-  window.requestAnimationFrame(() => {
-    document.getElementById(section)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    window.history.replaceState(null, "", window.location.pathname);
-  });
-}
-
-function hydrateSessionUI() {
-  const session = getSession();
-  if ($("#patient-welcome") && session?.type === "patient") {
-    $("#patient-welcome").textContent = `Sesión de ${session.name}`;
-    $("#patient-name").value = session.name || "";
-    $("#patient-email").value = session.email || "";
-  }
-  renderLoginMode();
-}
-
-function guardBookingPage() {
-  if (!$("#booking-form")) return;
-  const session = getSession();
-  const canBook = session?.type === "patient";
-  const gate = $("#booking-auth-gate");
-  const bookingLayout = $(".booking-layout");
-  const note = $("#patient-welcome");
-  if (gate) gate.hidden = canBook;
-  if (bookingLayout) bookingLayout.hidden = !canBook;
-  if (note) note.hidden = !canBook;
-}
-
-function renderAccountWidget() {
-  const header = $(".site-header");
-  if (!header || $("#account-widget")) return;
-  const session = getSession();
-  const wrapper = document.createElement("div");
-  wrapper.className = "account-widget";
-  wrapper.id = "account-widget";
-
-  if (!session) {
-    wrapper.innerHTML = '<a class="profile-link" href="login.html">Crear perfil</a>';
-    header.appendChild(wrapper);
-    return;
-  }
-
-  const adminLink = session.type === "admin" ? `<a href="admin.html?area=${session.area}">Panel</a>` : "";
-  const patientLinks = session.type === "patient"
-    ? '<a href="agenda.html">Agendar</a><a href="citas.html">Citas agendadas</a>'
-    : "";
-  wrapper.innerHTML = `
-    <button class="profile-orb" id="profile-menu-toggle" type="button" aria-label="Abrir perfil">
-      ${getInitials(session.name)}
-    </button>
-    <div class="profile-menu" id="profile-menu" hidden>
-      <strong>${session.name}</strong>
-      <small>${session.type === "admin" ? AREAS[session.area].label : "Paciente"}</small>
-      ${patientLinks}
-      ${adminLink}
-      <button id="patient-logout" type="button">Salir</button>
-    </div>
-  `;
-  header.appendChild(wrapper);
-}
-
-function renderServices() {
-  const area = $("#booking-area").value;
-  $("#booking-service").innerHTML = AREAS[area].services
-    .map((service) => `<option value="${service}">${service}</option>`)
+function hydrateTreatmentSelect() {
+  const select = $("#booking-service");
+  if (!select) return;
+  select.innerHTML = TREATMENTS
+    .map((item) => `<option value="${escapeHtml(item.name)}">${escapeHtml(item.name)} - ${escapeHtml(item.price)}</option>`)
     .join("");
-  renderAreaChoices();
-  renderServiceChoices();
+  select.addEventListener("change", loadAvailability);
 }
 
-function renderSlots() {
-  if (!$("#booking-area")) return;
-  const area = $("#booking-area").value;
-  const date = $("#booking-date").value;
-  const service = $("#booking-service").value;
-  const duration = getServiceDuration(service);
-  const slots = AREAS[area].slots;
-  const availability = slots.map((time) => getSlotStatus(area, date, time, duration));
-  const available = availability.filter((slot) => slot.status === "available");
-
-  $("#booking-time").innerHTML = available.length
-    ? available.map((slot) => `<option value="${slot.time}">${slot.time}</option>`).join("")
-    : '<option value="">Sin espacios disponibles</option>';
-
-  $("#availability-title").textContent = `${AREAS[area].label} · ${formatDate(date)}`;
-  $("#slot-list").innerHTML = availability
-    .map((slot) => {
-      const label = slot.status === "available" ? "Disponible" : slot.status === "outside" ? "No disponible" : slot.status === "blocked" ? "Bloqueado" : "Ocupado";
-      const className = slot.status === "available" ? "" : slot.status === "blocked" ? "is-blocked" : "is-taken";
-      const detail = slot.detail ? `<small>${slot.detail}</small>` : "";
-      return `<div class="slot ${className}"><strong>${slot.time}</strong><span>${label}</span>${detail}</div>`;
-    })
-    .join("");
-  renderTimeChoices(availability);
+function hydrateToday() {
+  const date = $("#booking-date");
+  if (!date) return;
+  const today = toDateInput(new Date());
+  date.min = today;
+  date.value = today;
+  date.addEventListener("change", loadAvailability);
 }
 
-function syncSlotSelection() {
-  const selected = $("#booking-time").value;
-  document.querySelectorAll(".slot").forEach((slot) => {
-    slot.toggleAttribute("data-selected", slot.textContent.includes(selected));
-  });
-  document.querySelectorAll("[data-time-choice]").forEach((button) => {
-    button.classList.toggle("is-selected", button.dataset.timeChoice === selected);
-  });
-}
+function bindBookingForm() {
+  $("#booking-form")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const submitButton = form.querySelector("button[type='submit']");
+    const payload = Object.fromEntries(new FormData(form).entries());
+    payload.service = $("#booking-service")?.value || payload.service;
+    payload.date = $("#booking-date")?.value || payload.date;
+    payload.time = document.querySelector("[name='time']:checked")?.value || "";
 
-function renderAreaChoices() {
-  if (!$("#area-choice") || !$("#booking-area")) return;
-  const selected = $("#booking-area").value;
-  $("#area-choice").innerHTML = Object.entries(AREAS).map(([value, area]) => `
-    <button class="choice-card ${value === selected ? "is-selected" : ""}" type="button" data-area-choice="${value}">
-      <strong>${area.label}</strong>
-      <span>Consulta estética y protocolos FOTONA</span>
-    </button>
-  `).join("");
-}
-
-function renderServiceChoices() {
-  if (!$("#service-choice") || !$("#booking-service")) return;
-  const selected = $("#booking-service").value;
-  $("#service-choice").innerHTML = Array.from($("#booking-service").options).map((option) => `
-    <button class="choice-pill ${option.value === selected ? "is-selected" : ""}" type="button" data-service-choice="${option.value}">
-      ${option.value}
-    </button>
-  `).join("");
-}
-
-function renderDateChoices() {
-  if (!$("#date-choice") || !$("#booking-date")) return;
-  const selected = $("#booking-date").value;
-  const today = new Date();
-  const year = activeCalendarMonth.getFullYear();
-  const month = activeCalendarMonth.getMonth();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const monthLabel = new Intl.DateTimeFormat("es-CR", { month: "long", year: "numeric" }).format(activeCalendarMonth);
-  const monthStart = new Date(year, month, 1);
-  const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  const isPastMonth = monthStart < currentMonthStart;
-
-  if ($("#current-month-label")) $("#current-month-label").textContent = monthLabel;
-  if ($("#prev-month")) $("#prev-month").disabled = isPastMonth;
-
-  const dates = Array.from({ length: daysInMonth }, (_, index) => {
-    const date = new Date(year, month, index + 1);
-    return toDateInput(date);
-  });
-  $("#date-choice").innerHTML = dates.map((dateString) => {
-    const [year, month, day] = dateString.split("-").map(Number);
-    const date = new Date(year, month - 1, day);
-    const isPastDate = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const dayName = new Intl.DateTimeFormat("es-CR", { weekday: "short" }).format(date);
-    const monthName = new Intl.DateTimeFormat("es-CR", { month: "short" }).format(date);
-    return `
-      <button class="date-card ${dateString === selected ? "is-selected" : ""}" type="button" data-date-choice="${dateString}" ${isPastDate ? "disabled" : ""}>
-        <span>${dayName}</span>
-        <strong>${day}</strong>
-        <small>${monthName}</small>
-      </button>
-    `;
-  }).join("");
-}
-
-function changeCalendarMonth(direction) {
-  activeCalendarMonth = new Date(activeCalendarMonth.getFullYear(), activeCalendarMonth.getMonth() + direction, 1);
-  const selected = $("#booking-date")?.value;
-  const today = new Date();
-  const monthStart = new Date(activeCalendarMonth.getFullYear(), activeCalendarMonth.getMonth(), 1);
-  const selectedDate = selected ? parseDateInput(selected) : null;
-  const selectedOutsideMonth = !selectedDate ||
-    selectedDate.getFullYear() !== activeCalendarMonth.getFullYear() ||
-    selectedDate.getMonth() !== activeCalendarMonth.getMonth();
-
-  if (selectedOutsideMonth && $("#booking-date")) {
-    const firstAvailable = monthStart < new Date(today.getFullYear(), today.getMonth(), 1)
-      ? today
-      : monthStart;
-    $("#booking-date").value = toDateInput(firstAvailable);
-  }
-
-  renderDateChoices();
-  renderSlots();
-}
-
-function renderTimeChoices(availability = []) {
-  if (!$("#time-choice")) return;
-  const selected = $("#booking-time")?.value;
-  const available = availability.filter((slot) => slot.status === "available");
-  $("#time-choice").innerHTML = available.length
-    ? available.map((slot) => `
-      <button class="time-chip ${slot.time === selected ? "is-selected" : ""}" type="button" data-time-choice="${slot.time}">
-        ${slot.time}
-      </button>
-    `).join("")
-    : '<p class="empty-choice">Sin espacios disponibles para esta fecha.</p>';
-}
-
-function handleAreaChoice(event) {
-  const button = event.target.closest("[data-area-choice]");
-  if (!button) return;
-  $("#booking-area").value = button.dataset.areaChoice;
-  renderServices();
-  renderSlots();
-}
-
-function handleServiceChoice(event) {
-  const button = event.target.closest("[data-service-choice]");
-  if (!button) return;
-  $("#booking-service").value = button.dataset.serviceChoice;
-  renderServiceChoices();
-  renderSlots();
-}
-
-function handleDateChoice(event) {
-  const button = event.target.closest("[data-date-choice]");
-  if (!button) return;
-  $("#booking-date").value = button.dataset.dateChoice;
-  renderDateChoices();
-  renderSlots();
-}
-
-function handleTimeChoice(event) {
-  const button = event.target.closest("[data-time-choice]");
-  if (!button) return;
-  $("#booking-time").value = button.dataset.timeChoice;
-  syncSlotSelection();
-}
-
-function getSlotStatus(area, date, time, duration = SLOT_INTERVAL_MINUTES) {
-  const start = timeToMinutes(time);
-  const end = start + duration;
-  const closing = timeToMinutes(AREAS[area].slots.at(-1)) + SLOT_INTERVAL_MINUTES;
-  if (end > closing) return { time, status: "outside", detail: "Fuera del horario" };
-
-  const appointment = state.appointments.find((item) => {
-    if (item.area !== area || item.date !== date || item.status === "cancelada") return false;
-    const itemStart = timeToMinutes(item.time);
-    const itemEnd = timeToMinutes(item.endTime || addMinutesToTime(item.time, item.duration || getServiceDuration(item.service)));
-    return intervalsOverlap(start, end, itemStart, itemEnd);
-  });
-  if (appointment) return { time, status: "taken", detail: appointment.service };
-
-  const block = state.blocks.find((item) => {
-    if (item.area !== area || item.date !== date) return false;
-    const blockStart = timeToMinutes(item.time);
-    const blockEnd = blockStart + (item.duration || SLOT_INTERVAL_MINUTES);
-    return intervalsOverlap(start, end, blockStart, blockEnd);
-  });
-  if (block) return { time, status: "blocked", detail: block.reason || "No disponible" };
-
-  return { time, status: "available" };
-}
-
-function createAppointment(event) {
-  event.preventDefault();
-  const session = getSession();
-  if (session?.type !== "patient") {
-    showNotice("Primero crea tu perfil o inicia sesión para agendar.", true);
-    window.setTimeout(() => {
-      window.location.href = "login.html?next=agenda";
-    }, 900);
-    return;
-  }
-  const area = $("#booking-area").value;
-  const date = $("#booking-date").value;
-  const time = $("#booking-time").value;
-  const service = $("#booking-service").value;
-  const duration = getServiceDuration(service);
-  const endTime = addMinutesToTime(time, duration);
-  const phone = $("#patient-phone").value.trim();
-
-  if (!time || getSlotStatus(area, date, time, duration).status !== "available") {
-    showMessage("booking-message", "Ese espacio ya no está disponible. Seleccione otro horario.", true);
-    renderSlots();
-    return;
-  }
-
-  if (!phone) {
-    showNotice("Ingresá un teléfono para confirmar la cita.", true);
-    $("#patient-phone").focus();
-    return;
-  }
-
-  state.appointments.push({
-    id: crypto.randomUUID(),
-    area,
-    service,
-    date,
-    time,
-    duration,
-    endTime,
-    name: session.name,
-    phone,
-    email: session.email,
-    note: $("#patient-note").value.trim(),
-    status: "confirmada",
-    createdAt: new Date().toISOString()
-  });
-
-  saveState();
-  event.target.reset();
-  $("#booking-area").value = area;
-  $("#booking-date").value = date;
-  renderServices();
-  renderDateChoices();
-  renderSlots();
-  renderPatientAppointments();
-  showMessage("booking-message", `Cita confirmada para ${AREAS[area].label} el ${formatDate(date)} a las ${time}.`);
-  if (activeAdminArea === area) renderAdmin();
-}
-
-function loginUser(event) {
-  event.preventDefault();
-  const name = $("#login-name")?.value.trim() || "";
-  const email = $("#login-email").value.trim();
-  const identifier = email.toLowerCase();
-  const password = $("#login-password").value.trim();
-  const passwordConfirm = $("#login-password-confirm")?.value.trim() || "";
-
-  if (password.length < 6) {
-    showNotice("La contraseña debe tener al menos 6 caracteres.", true);
-    return;
-  }
-
-  if (loginMode !== "login" && !isValidEmail(email)) {
-    showNotice("Ingresá un correo válido.", true);
-    return;
-  }
-
-  if (loginMode === "login") {
-    const account = DEMO_USERS[identifier];
-    if (account) {
-      if (password !== account.password) {
-        showNotice("Correo o contraseña incorrectos.", true);
-        return;
-      }
-      localStorage.setItem(SESSION_KEY, JSON.stringify({
-        type: account.type,
-        area: account.area,
-        name: account.name,
-        email: identifier.includes("@") ? email : `${identifier}@demo.local`
-      }));
-      window.location.href = account.type === "admin" ? `admin.html?area=${account.area}` : "agenda.html";
+    if (!payload.time) {
+      showNotice("Selecciona una hora disponible para continuar.", true);
       return;
     }
 
-    if (!isValidEmail(email)) {
-      showNotice("Ingresá un correo válido o el usuario local de prueba.", true);
-      return;
+    submitButton.disabled = true;
+    showNotice("Guardando solicitud de cita...", false);
+
+    try {
+      const response = await fetch(`${API_BASE}/appointments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.message || "No se pudo guardar la cita.");
+      form.reset();
+      hydrateToday();
+      showNotice(result.message || "Solicitud registrada. Te contactaremos para confirmar.", false);
+      await loadAvailability();
+    } catch (error) {
+      showNotice(error.message || "No se pudo conectar con la agenda. Intenta de nuevo.", true);
+    } finally {
+      submitButton.disabled = false;
     }
-
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ type: "patient", name: getNameFromEmail(email), email }));
-    window.location.href = "agenda.html";
-    return;
-  }
-
-  if (!name) {
-    showNotice("Ingresá tu nombre completo para crear el perfil.", true);
-    return;
-  }
-
-  if (password !== passwordConfirm) {
-    showNotice("Las contraseñas no coinciden.", true);
-    return;
-  }
-
-  localStorage.setItem(SESSION_KEY, JSON.stringify({ type: "patient", name, email }));
-  window.location.href = "agenda.html";
-}
-
-function toggleLoginMode(event) {
-  event.preventDefault();
-  loginMode = loginMode === "create" ? "login" : "create";
-  renderLoginMode();
-}
-
-function hydrateLoginModeFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("mode") === "login") loginMode = "login";
-}
-
-function renderLoginMode() {
-  if (!$("#unified-login-form")) return;
-  const isLogin = loginMode === "login";
-  const tag = $("#unified-login-form .tag");
-  const title = $("#unified-login-form h2");
-  const nameField = $("#full-name-field");
-  const confirmField = $("#confirm-password-field");
-  const passwordInput = $("#login-password");
-  const confirmInput = $("#login-password-confirm");
-  const emailLabel = $("#login-email")?.closest("label");
-
-  if (tag) tag.textContent = isLogin ? "Ingresar" : "Crear perfil";
-  if (title) title.textContent = isLogin ? "Ingresá a tu cuenta" : "Datos de acceso";
-  if (emailLabel) emailLabel.firstChild.textContent = isLogin ? "Correo o usuario" : "Correo";
-  if (nameField) nameField.hidden = isLogin;
-  if (confirmField) confirmField.hidden = isLogin;
-  if ($("#login-name")) $("#login-name").required = !isLogin;
-  if (confirmInput) confirmInput.required = !isLogin;
-  if (passwordInput) passwordInput.autocomplete = isLogin ? "current-password" : "new-password";
-  if ($("#login-submit")) $("#login-submit").textContent = isLogin ? "Ingresar" : "Crear perfil";
-  if ($("#login-switch")) {
-    $("#login-switch").innerHTML = isLogin
-      ? '¿No tenés cuenta? <a href="login.html" id="existing-account-link">Crear perfil</a>'
-      : '¿Ya tenés una cuenta? <a href="login.html" id="existing-account-link">Ingresar</a>';
-    $("#existing-account-link").addEventListener("click", toggleLoginMode);
-  }
-}
-
-function isValidEmail(email = "") {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
-}
-
-function getNameFromEmail(email = "") {
-  const localPart = email.split("@")[0] || "Paciente";
-  return localPart
-    .split(/[._-]+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ") || "Paciente";
-}
-
-function bindCarouselHover() {
-  const cards = document.querySelectorAll(".poster-card");
-  cards.forEach((card) => {
-    card.addEventListener("mouseenter", () => setCarouselActive(card));
-    card.addEventListener("focus", () => setCarouselActive(card));
-    card.addEventListener("mouseleave", clearCarouselActive);
-    card.addEventListener("blur", clearCarouselActive);
   });
 }
 
-function setCarouselActive(activeCard) {
-  document.querySelectorAll(".poster-card").forEach((card) => {
-    card.classList.toggle("is-active", card === activeCard);
-    card.classList.toggle("is-muted", card !== activeCard);
-  });
-}
+async function loadAvailability() {
+  const service = $("#booking-service")?.value;
+  const date = $("#booking-date")?.value;
+  const list = $("#slot-list");
+  if (!service || !date || !list) return;
+  list.innerHTML = '<p class="empty-state">Buscando horarios...</p>';
 
-function clearCarouselActive() {
-  document.querySelectorAll(".poster-card").forEach((card) => {
-    card.classList.remove("is-active", "is-muted");
-  });
-}
-
-function initAdminPage() {
-  const session = getSession();
-  const queryArea = new URLSearchParams(window.location.search).get("area");
-  const area = queryArea || session?.area;
-
-  if (!session || session.type !== "admin" || !AREAS[area]) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  activeAdminArea = area;
-  $("#admin-panel").hidden = false;
-  $("#admin-role").textContent = AREAS[area].doctor;
-  $("#admin-title").textContent = `Agenda de ${AREAS[area].label}`;
-  updateBlockTimesFromAdminSelection();
-  renderAdmin();
-}
-
-function getSession() {
   try {
-    return JSON.parse(localStorage.getItem(SESSION_KEY));
-  } catch {
-    return null;
+    const url = new URL(`${API_BASE}/availability`, window.location.origin);
+    url.searchParams.set("service", service);
+    url.searchParams.set("date", date);
+    const response = await fetch(url);
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.message || "No se pudo leer disponibilidad.");
+    renderSlots(payload.slots || []);
+  } catch (error) {
+    list.innerHTML = `<p class="empty-state is-error">${escapeHtml(error.message || "Agenda no disponible.")}</p>`;
   }
 }
 
-function logoutUser() {
-  localStorage.removeItem(SESSION_KEY);
-  window.location.href = "login.html";
+function renderSlots(slots) {
+  const list = $("#slot-list");
+  if (!list) return;
+  if (!slots.length) {
+    list.innerHTML = '<p class="empty-state">No hay horarios disponibles para esta fecha.</p>';
+    return;
+  }
+  list.innerHTML = slots.map((slot, index) => `
+    <label class="slot-option">
+      <input type="radio" name="time" value="${slot.time}" ${index === 0 ? "checked" : ""}>
+      <span>${slot.time}</span>
+    </label>
+  `).join("");
 }
 
-function toggleProfileMenu(event) {
-  event.stopPropagation();
-  const menu = $("#profile-menu");
-  if (menu) menu.hidden = !menu.hidden;
-}
-
-function closeProfileMenu(event) {
-  const widget = $("#account-widget");
-  const menu = $("#profile-menu");
-  if (!widget || !menu || widget.contains(event.target)) return;
-  menu.hidden = true;
-}
-
-function getInitials(name = "") {
-  const initials = name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-  return initials || "LC";
+function showNotice(message, isError) {
+  const notice = $("#form-notice");
+  if (!notice) return;
+  notice.textContent = message;
+  notice.classList.toggle("is-error", Boolean(isError));
+  notice.hidden = false;
 }
 
 function openVideoModal(videoId, title = "Video informativo") {
   const modal = $("#video-modal");
   const frame = $("#video-frame");
-  const label = $("#video-modal-title");
-  if (!modal || !frame || !videoId) return;
-  frame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
-  if (label) label.textContent = title;
+  const heading = $("#video-modal-title");
+  if (!modal || !frame) return;
+  if (heading) heading.textContent = title;
+  frame.src = `https://www.youtube-nocookie.com/embed/${videoId}`;
   modal.hidden = false;
-  document.body.classList.add("modal-open");
 }
 
 function closeVideoModal() {
@@ -722,275 +176,16 @@ function closeVideoModal() {
   if (!modal || !frame) return;
   frame.src = "";
   modal.hidden = true;
-  document.body.classList.remove("modal-open");
-}
-
-function updateBlockTimesFromAdminSelection() {
-  const area = activeAdminArea || $("#admin-area").value;
-  if (!$("#block-time")) return;
-  $("#block-time").innerHTML = AREAS[area].slots
-    .map((time) => `<option value="${time}">${time}</option>`)
-    .join("");
-}
-
-function blockSlot() {
-  if (!activeAdminArea) return;
-  const date = $("#block-date").value;
-  const time = $("#block-time").value;
-  const status = getSlotStatus(activeAdminArea, date, time);
-
-  if (status.status === "taken") {
-    showNotice("No se puede bloquear un espacio que ya tiene una cita confirmada.", true);
-    return;
-  }
-
-  if (status.status === "blocked") {
-    showNotice("Ese espacio ya está bloqueado.", true);
-    return;
-  }
-
-  state.blocks.push({
-    id: crypto.randomUUID(),
-    area: activeAdminArea,
-    date,
-    time,
-    reason: $("#block-reason").value.trim() || "No disponible"
-  });
-
-  saveState();
-  $("#block-reason").value = "";
-  renderAdmin();
-  renderSlots();
-  showNotice("Espacio bloqueado correctamente.");
-}
-
-function renderAdmin() {
-  const appointments = state.appointments
-    .filter((item) => item.area === activeAdminArea)
-    .sort(sortByDateTime);
-  const activeAppointments = appointments.filter((item) => item.status !== "cancelada");
-  const activeMinutes = activeAppointments.reduce((total, item) => total + (item.duration || getServiceDuration(item.service)), 0);
-  const blocks = state.blocks
-    .filter((item) => item.area === activeAdminArea)
-    .sort(sortByDateTime);
-
-  $("#admin-summary").innerHTML = [
-    ["Citas activas", activeAppointments.length],
-    ["Canceladas", appointments.length - activeAppointments.length],
-    ["Horas reservadas", formatDuration(activeMinutes)],
-    ["Bloqueos", blocks.length]
-  ]
-    .map(([label, value]) => `<div class="summary-item"><strong>${value}</strong><span>${label}</span></div>`)
-    .join("");
-
-  $("#appointment-list").innerHTML = appointments.length
-    ? appointments.map(renderAppointmentItem).join("")
-    : emptyState("No hay citas para esta área.");
-
-  $("#block-list").innerHTML = blocks.length
-    ? blocks.map(renderBlockItem).join("")
-    : emptyState("No hay espacios bloqueados.");
-
-  document.querySelectorAll("[data-cancel-appointment]").forEach((button) => {
-    button.addEventListener("click", () => cancelAppointment(button.dataset.cancelAppointment));
-  });
-  document.querySelectorAll("[data-delete-block]").forEach((button) => {
-    button.addEventListener("click", () => deleteBlock(button.dataset.deleteBlock));
-  });
-}
-
-function renderAppointmentItem(item) {
-  const inactive = item.status === "cancelada" ? " · cancelada" : "";
-  const duration = item.duration || getServiceDuration(item.service);
-  const endTime = item.endTime || addMinutesToTime(item.time, duration);
-  const cancelButton = item.status === "cancelada"
-    ? ""
-    : `<button class="mini-button danger" data-cancel-appointment="${item.id}" type="button">Cancelar cita</button>`;
-
-  return `
-    <article class="admin-item">
-      <strong>${formatDate(item.date)} · ${item.time} - ${endTime}${inactive}</strong>
-      <span>${item.name} · ${item.service}</span>
-      <small>Duración interna: ${formatDuration(duration)}</small>
-      <small>${item.phone} · ${item.email}</small>
-      ${item.note ? `<small>${item.note}</small>` : ""}
-      <div class="item-actions">${cancelButton}</div>
-    </article>
-  `;
-}
-
-function renderPatientAppointments() {
-  if (!$("#patient-appointment-list")) return;
-  const session = getSession();
-  if (session?.type !== "patient") {
-    $("#patient-appointment-list").innerHTML = emptyPatientAppointment("Iniciá sesión para ver tus citas agendadas.");
-    return;
-  }
-
-  const appointments = state.appointments
-    .filter((item) => item.email === session.email && item.status !== "cancelada")
-    .sort(sortByDateTime);
-
-  $("#patient-appointment-list").innerHTML = appointments.length
-    ? appointments.map(renderPatientAppointmentItem).join("")
-    : emptyPatientAppointment("Aún no tenés citas agendadas.");
-}
-
-function renderPatientAppointmentItem(item) {
-  return `
-    <article class="patient-appointment">
-      <strong>${formatDate(item.date)} · ${item.time}</strong>
-      <span>${AREAS[item.area]?.label || item.area}</span>
-      <small>${item.service}</small>
-      <small>${item.phone}${item.note ? ` · ${item.note}` : ""}</small>
-      <em class="status-pill">${item.status}</em>
-    </article>
-  `;
-}
-
-function emptyPatientAppointment(message) {
-  return `<article class="patient-appointment"><small>${message}</small></article>`;
-}
-
-function renderBlockItem(item) {
-  return `
-    <article class="admin-item">
-      <strong>${formatDate(item.date)} · ${item.time}</strong>
-      <span>${item.reason || "No disponible"}</span>
-      <div class="item-actions">
-        <button class="mini-button danger" data-delete-block="${item.id}" type="button">Liberar espacio</button>
-      </div>
-    </article>
-  `;
-}
-
-function cancelAppointment(id) {
-  const appointment = state.appointments.find((item) => item.id === id);
-  if (!appointment) return;
-  appointment.status = "cancelada";
-  saveState();
-  renderAdmin();
-  renderSlots();
-  renderPatientAppointments();
-}
-
-function deleteBlock(id) {
-  const index = state.blocks.findIndex((item) => item.id === id);
-  if (index === -1) return;
-  state.blocks.splice(index, 1);
-  saveState();
-  renderAdmin();
-  renderSlots();
-}
-
-function resetDemo() {
-  localStorage.removeItem(STORAGE_KEY);
-  const fresh = loadState();
-  state.appointments = fresh.appointments;
-  state.blocks = fresh.blocks;
-  renderSlots();
-  renderPatientAppointments();
-  if (activeAdminArea) renderAdmin();
-}
-
-function sortByDateTime(a, b) {
-  return `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`);
-}
-
-function buildTimeSlots(startTime, endTime, interval = SLOT_INTERVAL_MINUTES) {
-  const slots = [];
-  for (let minutes = timeToMinutes(startTime); minutes < timeToMinutes(endTime); minutes += interval) {
-    slots.push(minutesToTime(minutes));
-  }
-  return slots;
-}
-
-function getServiceDuration(service = "") {
-  return SERVICE_DURATIONS[service] || 120;
-}
-
-function timeToMinutes(time = "00:00") {
-  const [hours, minutes] = time.split(":").map(Number);
-  return (hours * 60) + minutes;
-}
-
-function minutesToTime(totalMinutes) {
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
-}
-
-function addMinutesToTime(time, duration) {
-  return minutesToTime(timeToMinutes(time) + duration);
-}
-
-function intervalsOverlap(startA, endA, startB, endB) {
-  return startA < endB && endA > startB;
-}
-
-function formatDuration(minutes = 0) {
-  const hours = Math.floor(minutes / 60);
-  const remaining = minutes % 60;
-  if (!hours) return `${remaining} min`;
-  if (!remaining) return `${hours} h`;
-  return `${hours} h ${remaining} min`;
 }
 
 function toDateInput(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  return date.toISOString().slice(0, 10);
 }
 
-function parseDateInput(dateString) {
-  const [year, month, day] = dateString.split("-").map(Number);
-  return new Date(year, month - 1, day);
-}
-
-function formatDate(dateString) {
-  if (!dateString) return "";
-  const [year, month, day] = dateString.split("-").map(Number);
-  return new Intl.DateTimeFormat("es-CR", {
-    weekday: "short",
-    year: "numeric",
-    month: "short",
-    day: "numeric"
-  }).format(new Date(year, month - 1, day));
-}
-
-function showMessage(id, message, isError = false) {
-  const element = document.getElementById(id);
-  if (!element) return;
-  element.textContent = message;
-  element.style.color = isError ? "#9a3412" : "#9d4765";
-  showNotice(message, isError);
-}
-
-function showNotice(message, isError = false) {
-  let notice = $("#app-notice");
-  if (!notice) {
-    notice = document.createElement("div");
-    notice.id = "app-notice";
-    notice.className = "app-notice";
-    notice.setAttribute("role", "status");
-    notice.setAttribute("aria-live", "polite");
-    document.body.appendChild(notice);
-  }
-
-  notice.innerHTML = `
-    <span class="notice-mark" aria-hidden="true"></span>
-    <span>${message}</span>
-  `;
-  notice.classList.toggle("is-error", isError);
-  notice.classList.remove("is-visible");
-  window.clearTimeout(notice.hideTimer);
-  requestAnimationFrame(() => notice.classList.add("is-visible"));
-  notice.hideTimer = window.setTimeout(() => {
-    notice.classList.remove("is-visible");
-  }, 3400);
-}
-
-function emptyState(message) {
-  return `<div class="admin-item"><small>${message}</small></div>`;
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
