@@ -7,16 +7,16 @@ const TREATMENTS = [
   { name: "Dermapen paquete 5 sesiones", category: "Paquete", price: "CRC 180.000", duration: 120 },
   { name: "Salmon DNA Repair paquete 5 sesiones", category: "Paquete", price: "CRC 280.000", duration: 120 },
   { name: "Bridal Glow Experience", category: "Evento", price: "CRC 100.000", duration: 120 },
-  { name: "Fotona Total Rejuvenation", category: "Laser Fotona", price: "CRC 350.000", duration: 120 },
-  { name: "Silk Skin Laser", category: "Depilacion laser", price: "Desde CRC 50.000", duration: 60 },
+  { name: "Fotona Total Rejuvenation", category: "Láser Fotona", price: "CRC 350.000", duration: 120 },
+  { name: "Silk Skin Laser", category: "Depilación láser", price: "Desde CRC 50.000", duration: 60 },
   { name: "Star Former Sculpt", category: "Corporal", price: "CRC 50.000", duration: 60 },
-  { name: "Bikini completo + axilas", category: "Depilacion laser", price: "CRC 50.000", duration: 60 },
-  { name: "Bikini completo + media pierna + axilas", category: "Depilacion laser", price: "CRC 75.000", duration: 90 },
-  { name: "Bikini completo + pierna completa + axilas + bigote", category: "Depilacion laser", price: "CRC 100.000", duration: 120 },
-  { name: "Espalda hombre", category: "Depilacion laser", price: "CRC 50.000", duration: 60 },
-  { name: "Pecho hombre", category: "Depilacion laser", price: "CRC 50.000", duration: 60 },
-  { name: "TightSculpting Fotona", category: "Corporal", price: "Segun valoracion", duration: 120 },
-  { name: "Aranitas / Telangiectasias", category: "Vascular", price: "Segun valoracion", duration: 60 }
+  { name: "Bikini completo + axilas", category: "Depilación láser", price: "CRC 50.000", duration: 60 },
+  { name: "Bikini completo + media pierna + axilas", category: "Depilación láser", price: "CRC 75.000", duration: 90 },
+  { name: "Bikini completo + pierna completa + axilas + bigote", category: "Depilación láser", price: "CRC 100.000", duration: 120 },
+  { name: "Espalda hombre", category: "Depilación láser", price: "CRC 50.000", duration: 60 },
+  { name: "Pecho hombre", category: "Depilación láser", price: "CRC 50.000", duration: 60 },
+  { name: "TightSculpting Fotona", category: "Corporal", price: "Según valoración", duration: 120 },
+  { name: "Arañitas / Telangiectasias", category: "Vascular", price: "Según valoración", duration: 60 }
 ];
 
 export default {
@@ -45,13 +45,13 @@ export default {
 };
 
 async function getAvailability(url, env) {
-  if (!env.DB) return json({ message: "La base de datos de agenda no esta configurada." }, 503);
+  if (!env.DB) return json({ message: "La base de datos de agenda no está configurada." }, 503);
 
   const serviceName = String(url.searchParams.get("service") || "").trim();
   const date = String(url.searchParams.get("date") || "").trim();
   const treatment = findTreatment(serviceName);
-  if (!treatment) return json({ message: "Servicio no valido." }, 400);
-  if (!isValidDate(date)) return json({ message: "Fecha no valida." }, 400);
+  if (!treatment) return json({ message: "Servicio no válido." }, 400);
+  if (!isValidDate(date)) return json({ message: "Fecha no válida." }, 400);
 
   const rows = await env.DB.prepare(`
     SELECT time, duration, status FROM appointments
@@ -73,7 +73,7 @@ async function getAvailability(url, env) {
 }
 
 async function createAppointment(request, env) {
-  if (!env.DB) return json({ message: "La base de datos de agenda no esta configurada." }, 503);
+  if (!env.DB) return json({ message: "La base de datos de agenda no está configurada." }, 503);
 
   const body = await request.json();
   const name = cleanText(body.name);
@@ -86,11 +86,11 @@ async function createAppointment(request, env) {
   const treatment = findTreatment(service);
 
   if (!name || name.length < 3) return json({ message: "Ingresa tu nombre completo." }, 400);
-  if (!phone || phone.length < 8) return json({ message: "Ingresa un telefono valido." }, 400);
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ message: "Ingresa un correo valido o deja el campo vacio." }, 400);
-  if (!treatment) return json({ message: "Selecciona un servicio valido." }, 400);
-  if (!isValidDate(date)) return json({ message: "Selecciona una fecha valida." }, 400);
-  if (!/^\d{2}:\d{2}$/.test(time)) return json({ message: "Selecciona una hora valida." }, 400);
+  if (!phone || phone.length < 8) return json({ message: "Ingresa un teléfono válido." }, 400);
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ message: "Ingresa un correo válido o deja el campo vacío." }, 400);
+  if (!treatment) return json({ message: "Selecciona un servicio válido." }, 400);
+  if (!isValidDate(date)) return json({ message: "Selecciona una fecha válida." }, 400);
+  if (!/^\d{2}:\d{2}$/.test(time)) return json({ message: "Selecciona una hora válida." }, 400);
 
   const availabilityUrl = new URL("https://local/api/availability");
   availabilityUrl.searchParams.set("service", service);
@@ -98,7 +98,7 @@ async function createAppointment(request, env) {
   const availability = await getAvailability(availabilityUrl, env);
   const availabilityPayload = await availability.clone().json();
   if (!availability.ok || !availabilityPayload.slots?.some((slot) => slot.time === time)) {
-    return json({ message: "Ese horario ya no esta disponible. Selecciona otro espacio." }, 409);
+    return json({ message: "Ese horario ya no está disponible. Selecciona otro espacio." }, 409);
   }
 
   const id = crypto.randomUUID();
@@ -109,12 +109,12 @@ async function createAppointment(request, env) {
 
   return json({
     id,
-    message: "Solicitud registrada. El equipo de Jenny Delgado te contactara para confirmar la cita."
+    message: "Solicitud registrada. El equipo de Jenny Delgado te contactará para confirmar la cita."
   }, 201);
 }
 
 async function listAppointments(url, env) {
-  if (!env.DB) return json({ message: "La base de datos de agenda no esta configurada." }, 503);
+  if (!env.DB) return json({ message: "La base de datos de agenda no está configurada." }, 503);
   if (!env.ADMIN_TOKEN || url.searchParams.get("token") !== env.ADMIN_TOKEN) {
     return json({ message: "No autorizado." }, 401);
   }

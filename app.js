@@ -9,16 +9,16 @@ const TREATMENTS = [
   { name: "Dermapen paquete 5 sesiones", category: "Paquete", price: "CRC 180.000", duration: 120 },
   { name: "Salmon DNA Repair paquete 5 sesiones", category: "Paquete", price: "CRC 280.000", duration: 120 },
   { name: "Bridal Glow Experience", category: "Evento", price: "CRC 100.000", duration: 120 },
-  { name: "Fotona Total Rejuvenation", category: "Laser Fotona", price: "CRC 350.000", duration: 120 },
-  { name: "Silk Skin Laser", category: "Depilacion laser", price: "Desde CRC 50.000", duration: 60 },
+  { name: "Fotona Total Rejuvenation", category: "Láser Fotona", price: "CRC 350.000", duration: 120 },
+  { name: "Silk Skin Laser", category: "Depilación láser", price: "Desde CRC 50.000", duration: 60 },
   { name: "Star Former Sculpt", category: "Corporal", price: "CRC 50.000", duration: 60 },
-  { name: "Bikini completo + axilas", category: "Depilacion laser", price: "CRC 50.000", duration: 60 },
-  { name: "Bikini completo + media pierna + axilas", category: "Depilacion laser", price: "CRC 75.000", duration: 90 },
-  { name: "Bikini completo + pierna completa + axilas + bigote", category: "Depilacion laser", price: "CRC 100.000", duration: 120 },
-  { name: "Espalda hombre", category: "Depilacion laser", price: "CRC 50.000", duration: 60 },
-  { name: "Pecho hombre", category: "Depilacion laser", price: "CRC 50.000", duration: 60 },
-  { name: "TightSculpting Fotona", category: "Corporal", price: "Segun valoracion", duration: 120 },
-  { name: "Aranitas / Telangiectasias", category: "Vascular", price: "Segun valoracion", duration: 60 }
+  { name: "Bikini completo + axilas", category: "Depilación láser", price: "CRC 50.000", duration: 60 },
+  { name: "Bikini completo + media pierna + axilas", category: "Depilación láser", price: "CRC 75.000", duration: 90 },
+  { name: "Bikini completo + pierna completa + axilas + bigote", category: "Depilación láser", price: "CRC 100.000", duration: 120 },
+  { name: "Espalda hombre", category: "Depilación láser", price: "CRC 50.000", duration: 60 },
+  { name: "Pecho hombre", category: "Depilación láser", price: "CRC 50.000", duration: 60 },
+  { name: "TightSculpting Fotona", category: "Corporal", price: "Según valoración", duration: 120 },
+  { name: "Arañitas / Telangiectasias", category: "Vascular", price: "Según valoración", duration: 60 }
 ];
 
 const BEAUTY_GOALS = {
@@ -27,42 +27,42 @@ const BEAUTY_GOALS = {
     title: "Korean Glass Skin",
     copy: "Protocolo orientado a luminosidad, textura uniforme y acabado radiante.",
     price: "Desde CRC 40.000",
-    duration: "Duracion aproximada: 120 min"
+    duration: "Duración aproximada: 120 min"
   },
   textura: {
     label: "Textura",
     title: "Dermapen Skin Booster",
-    copy: "Microneedling para mejorar textura, poros, lineas finas e hidratacion.",
+    copy: "Microneedling para mejorar textura, poros, líneas finas e hidratación.",
     price: "Desde CRC 45.000",
-    duration: "Duracion aproximada: 120 min"
+    duration: "Duración aproximada: 120 min"
   },
   rejuvenecimiento: {
     label: "Rejuvenecimiento",
     title: "Fotona Total Rejuvenation",
-    copy: "Laser Fotona para trabajar firmeza, textura y luminosidad con protocolo personalizado.",
+    copy: "Láser Fotona para trabajar firmeza, textura y luminosidad con protocolo personalizado.",
     price: "CRC 350.000",
-    duration: "Duracion aproximada: 120 min"
+    duration: "Duración aproximada: 120 min"
   },
   firmeza: {
     label: "Firmeza corporal",
     title: "TightSculpting Fotona",
-    copy: "Tratamiento no invasivo para tensar piel y apoyar remodelacion corporal.",
-    price: "Segun valoracion",
-    duration: "Duracion aproximada: 120 min"
+    copy: "Tratamiento no invasivo para tensar piel y apoyar remodelación corporal.",
+    price: "Según valoración",
+    duration: "Duración aproximada: 120 min"
   },
   vello: {
     label: "Vello",
     title: "Silk Skin Laser",
-    copy: "Reduccion progresiva del vello con enfoque en seguridad y precision.",
+    copy: "Reducción progresiva del vello con enfoque en seguridad y precisión.",
     price: "Desde CRC 50.000",
-    duration: "Duracion aproximada: 60 min"
+    duration: "Duración aproximada: 60 min"
   },
   vascular: {
     label: "Lesiones vasculares",
-    title: "Aranitas / Telangiectasias",
-    copy: "Tratamiento laser enfocado en venitas visibles y lesiones vasculares superficiales.",
-    price: "Segun valoracion",
-    duration: "Duracion aproximada: 60 min"
+    title: "Arañitas / Telangiectasias",
+    copy: "Tratamiento láser enfocado en venitas visibles y lesiones vasculares superficiales.",
+    price: "Según valoración",
+    duration: "Duración aproximada: 60 min"
   }
 };
 
@@ -203,7 +203,7 @@ function bindBookingForm() {
     }
 
     submitButton.disabled = true;
-    showNotice("Guardando solicitud de cita...", false);
+      showNotice("Guardando solicitud de cita...", false);
 
     try {
       const response = await fetch(`${API_BASE}/appointments`, {

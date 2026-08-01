@@ -1,10 +1,10 @@
-# Jenny Delgado Centro Estetica Laser
+# Jenny Delgado Centro Estética Láser
 
-Sitio estetico independiente para Jenny Delgado. Mantiene su propia marca, catalogo, precios y agenda en Cloudflare Workers + D1.
+Sitio estético independiente para Jenny Delgado. Mantiene su propia marca, catálogo, precios y agenda en Cloudflare Workers + D1.
 
 ## Flujo productivo
 
-- `index.html`: landing usable con tratamientos, tecnologia Fotona, videos y precios.
+- `index.html`: landing usable con tratamientos, tecnología Fotona, videos y precios.
 - `agenda.html`: solicitud de cita conectada a `/api/availability` y `/api/appointments`.
 - `login.html`, `admin.html`, `citas.html`: handoffs seguros sin usuarios locales ni agenda en navegador.
 - `worker.js`: API de tratamientos, disponibilidad, solicitudes y consulta administrativa protegida.
@@ -17,7 +17,7 @@ Base creada:
 - Database name: `jenny-centro-estetica-laser`
 - Binding: `DB`
 
-La configuracion vive en `wrangler.toml`.
+La configuración vive en `wrangler.toml`.
 
 Aplicar migraciones:
 
@@ -39,7 +39,7 @@ Endpoint protegido:
 /api/admin/appointments?token=TOKEN
 ```
 
-## Desarrollo y validacion
+## Desarrollo y validación
 
 ```bash
 npx.cmd wrangler dev
