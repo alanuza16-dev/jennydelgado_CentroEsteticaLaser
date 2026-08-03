@@ -1138,7 +1138,7 @@ h3 {
   }
 
   body {
-    padding-bottom: calc(82px + env(safe-area-inset-bottom));
+    padding-bottom: 0;
   }
 
   body.nav-open {
@@ -1170,6 +1170,8 @@ h3 {
   .mobile-menu-toggle span,
   .mobile-menu-close span {
     position: absolute;
+    left: 50%;
+    top: 50%;
     width: 20px;
     height: 2px;
     border-radius: 999px;
@@ -1178,21 +1180,21 @@ h3 {
   }
 
   .mobile-menu-toggle span:first-child {
-    transform: translateY(-4px);
+    transform: translate(-50%, calc(-50% - 4px));
   }
 
   .mobile-menu-toggle span:last-child {
     width: 15px;
-    transform: translate(3px, 5px);
+    transform: translate(calc(-50% + 3px), calc(-50% + 5px));
   }
 
   body.nav-open .mobile-menu-toggle span:first-child {
-    transform: rotate(42deg);
+    transform: translate(-50%, -50%) rotate(42deg);
   }
 
   body.nav-open .mobile-menu-toggle span:last-child {
     width: 20px;
-    transform: rotate(-42deg);
+    transform: translate(-50%, -50%) rotate(-42deg);
   }
 
   body.nav-open .mobile-menu-toggle {
@@ -1289,14 +1291,15 @@ h3 {
     color: var(--ink);
     background: rgba(255, 255, 255, .68);
     cursor: pointer;
+    padding: 0;
   }
 
   .mobile-menu-close span:first-child {
-    transform: rotate(42deg);
+    transform: translate(-50%, -50%) rotate(42deg);
   }
 
   .mobile-menu-close span:last-child {
-    transform: rotate(-42deg);
+    transform: translate(-50%, -50%) rotate(-42deg);
   }
 
   .mobile-menu-cta {
@@ -1822,12 +1825,19 @@ h3 {
   }
 
   .footer-actions {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .footer-actions span {
+    grid-column: 1 / -1;
+    text-align: center;
   }
 
   .footer-action,
   .brand-footer a {
     width: 100%;
+    text-align: center;
   }
 
   .footer-bottom {
