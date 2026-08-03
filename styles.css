@@ -1818,6 +1818,14 @@ h3 {
   .brand-footer {
     gap: 24px;
     padding: 42px var(--mobile-x) calc(106px + env(safe-area-inset-bottom));
+    text-align: center;
+  }
+
+  .footer-brand,
+  .footer-links,
+  .footer-actions,
+  .footer-bottom {
+    justify-items: center;
   }
 
   .brand-footer strong {
@@ -1842,6 +1850,7 @@ h3 {
 
   .footer-bottom {
     display: grid;
+    text-align: center;
   }
 }
 
