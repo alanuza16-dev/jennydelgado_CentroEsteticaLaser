@@ -943,7 +943,7 @@ h3 {
 
 .brand-footer {
   display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(220px, .58fr) minmax(240px, .7fr);
+  grid-template-columns: minmax(0, 1.12fr) minmax(220px, .7fr);
   gap: clamp(28px, 5vw, 68px);
   padding: clamp(42px, 6vw, 82px) clamp(22px, 6vw, 86px) 26px;
   color: rgba(255, 255, 255, .72);
@@ -1823,7 +1823,6 @@ h3 {
 
   .footer-brand,
   .footer-links,
-  .footer-actions,
   .footer-bottom {
     justify-items: center;
   }
