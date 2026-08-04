@@ -71,6 +71,8 @@ const focusableSelector = "a[href], button:not([disabled]), input:not([disabled]
 let lastMenuTrigger = null;
 let bookingStep = 1;
 
+document.documentElement.classList.add("js-ready");
+
 document.addEventListener("DOMContentLoaded", () => {
   bindNavigation();
   bindVideos();
