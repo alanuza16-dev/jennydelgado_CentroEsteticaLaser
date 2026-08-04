@@ -1828,7 +1828,26 @@ h3 {
   }
 
   .brand-footer strong {
-    font-size: clamp(34px, 11vw, 46px);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 850;
+  }
+
+  .footer-brand span,
+  .footer-links span,
+  .brand-footer a,
+  .footer-bottom,
+  .footer-bottom small {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .footer-brand span,
+  .footer-links span {
+    margin-bottom: 8px;
+    text-transform: none;
+    color: rgba(255, 255, 255, .62);
   }
 
   .footer-actions {
