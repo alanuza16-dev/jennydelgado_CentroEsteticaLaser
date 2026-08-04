@@ -1154,12 +1154,6 @@ h3 {
   fill: currentColor;
 }
 
-.footer-map-link {
-  margin-top: 2px;
-  color: rgba(255, 255, 255, .82);
-  font-weight: 760;
-}
-
 .footer-action {
   width: fit-content;
   border: 1px solid rgba(255, 255, 255, .16);
