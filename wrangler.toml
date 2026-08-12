@@ -1,0 +1,14 @@
+name = "jennydelgadocentroesteticalaser"
+main = "worker.js"
+compatibility_date = "2026-07-31"
+
+[assets]
+directory = "."
+binding = "ASSETS"
+run_worker_first = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "jenny-centro-estetica-laser"
+database_id = "77749d0f-77f4-4b2d-9b3a-1ea9753e9764"
+migrations_dir = "migrations"

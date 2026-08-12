@@ -1,0 +1,7 @@
+.git
+.wrangler
+.dev.vars
+.dev.vars.*
+worker.js
+wrangler.toml
+migrations

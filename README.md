@@ -1,44 +1,55 @@
 # Jenny Delgado Centro Estética Láser
 
-Sitio demo estático en HTML, CSS y JavaScript para separar la experiencia de estética láser del sitio ginecológico de Dr. Carazo.
+Sitio estético independiente para Jenny Delgado. Mantiene su propia marca, catálogo, precios y agenda en Cloudflare Workers + D1.
 
-Incluye:
+## Flujo productivo
 
-- Página pública para Centro Estética Láser.
-- Tratamientos FOTONA con videos informativos.
-- Agenda local para valoraciones y tratamientos estéticos.
-- Perfil de cliente y resumen de citas agendadas.
-- Panel administrador para bloquear espacios, revisar citas y cancelar citas demo.
-- Persistencia local con `localStorage`.
+- `index.html`: landing usable con tratamientos, tecnología Fotona, videos y precios.
+- `agenda.html`: solicitud de cita conectada a `/api/availability` y `/api/appointments`.
+- `login.html`, `admin.html`, `citas.html`: handoffs seguros sin usuarios locales ni agenda en navegador.
+- `worker.js`: API de tratamientos, disponibilidad, solicitudes y consulta administrativa protegida.
+- `migrations/0001_create_appointments.sql`: tablas D1 para solicitudes y bloqueos.
 
-## Accesos demo
+## D1
 
-- Cliente: `test` / `123456`
-- Administrador estética: `admin1` / `123456`
+Base creada:
 
-## Ejecutar local
+- Database name: `jenny-centro-estetica-laser`
+- Binding: `DB`
 
-Abra `index.html` directamente en el navegador o sirva la carpeta con cualquier servidor estático.
+La configuración vive en `wrangler.toml`.
+
+Aplicar migraciones:
 
 ```bash
-npx serve .
+npx.cmd wrangler d1 migrations apply jenny-centro-estetica-laser --remote
 ```
 
-## Cloudflare Pages
+## Secretos
 
-Configuración recomendada:
+Opcional para consultar solicitudes por API administrativa:
 
-- Framework preset: `None`
-- Build command: dejar vacío
-- Build output directory: `/`
-- Root directory: `/`
+```bash
+npx.cmd wrangler secret put ADMIN_TOKEN
+```
 
-## Producción
+Endpoint protegido:
 
-Para convertir este demo en producto real hace falta conectar:
+```text
+/api/admin/appointments?token=TOKEN
+```
 
-- Base de datos para citas, bloqueos y usuarios.
-- Autenticación real.
-- Notificaciones por correo, WhatsApp o SMS.
-- Reglas de disponibilidad por servicio.
-- Políticas de privacidad y consentimiento.
+## Desarrollo y validación
+
+```bash
+npx.cmd wrangler dev
+node --check app.js
+node --check worker.js
+npx.cmd wrangler deploy --dry-run
+```
+
+## Deploy
+
+```bash
+npx.cmd wrangler deploy --keep-vars
+```
