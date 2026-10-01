@@ -2,7 +2,7 @@
 
 ## Jenny Delgado
 
-- Usar imágenes de estética facial, piel, cabina y tecnología láser estética.
+- Usar imágenes de estética facial, piel, cabina y tecnología laser estética.
 - Mantener `assets/logo-mark.svg` y `assets/logo-horizontal.svg` como señales principales de marca.
 - No usar al Dr. Carazo ni material ginecológico como señal visual de este sitio.
 - Precios visibles deben mantenerse en colones como `CRC`.

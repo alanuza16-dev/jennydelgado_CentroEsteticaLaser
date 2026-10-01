@@ -1,14 +1,14 @@
-# Jenny Delgado Centro Estética Láser
+# Jenny Delgado Centro Estética Laser
 
-Sitio estético independiente para Jenny Delgado. Mantiene su propia marca, catálogo, precios y agenda en Cloudflare Workers + D1.
+Sitio estético independiente para Jenny Delgado. Mantiene su propia marca y catálogo en Cloudflare Workers. Las citas se coordinan por WhatsApp.
 
 ## Flujo productivo
 
 - `index.html`: landing usable con tratamientos, tecnología Fotona, videos y precios.
-- `agenda.html`: solicitud de cita conectada a `/api/availability` y `/api/appointments`.
+- `agenda.html`: formulario de contacto que prepara un mensaje al WhatsApp `+506 8884 0452`; no asigna fecha ni hora.
 - `login.html`, `admin.html`, `citas.html`: handoffs seguros sin usuarios locales ni agenda en navegador.
-- `worker.js`: API de tratamientos, disponibilidad, solicitudes y consulta administrativa protegida.
-- `migrations/0001_create_appointments.sql`: tablas D1 para solicitudes y bloqueos.
+- `worker.js`: catálogo y consulta administrativa histórica protegida. Las rutas públicas antiguas de disponibilidad y creación de citas devuelven 410.
+- `migrations/0001_create_appointments.sql`: tablas D1 de solicitudes históricas y bloqueos, conservadas sin nuevos registros desde el formulario.
 
 ## D1
 

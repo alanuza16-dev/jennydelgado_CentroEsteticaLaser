@@ -1,4 +1,4 @@
-# Design System - Jenny Delgado Centro Estética Láser
+# Design System - Jenny Delgado Centro Estética Laser
 
 ## Principios
 
@@ -61,7 +61,7 @@ Uso incorrecto: pantalla completamente rosa, gradientes saturados o apariencia i
 ## Imágenes
 
 - Hero: retrato vertical o cabina, luz difusa, espacio negativo para tipografía.
-- Tecnología: fondo oscuro, detalle láser, piel/cabina sin saturar.
+- Tecnología: fondo oscuro, detalle laser, piel/cabina sin saturar.
 - Antes/después: mostrar solo con consentimiento; no usar placeholders falsos.
 
 ## Movimiento

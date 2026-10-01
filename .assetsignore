@@ -1,7 +1,14 @@
 .git
+.git/**
+**/.git/**
 .wrangler
+.wrangler/**
+**/node_modules/**
 .dev.vars
 .dev.vars.*
 worker.js
 wrangler.toml
 migrations
+*.md
+.gitignore
+.assetsignore

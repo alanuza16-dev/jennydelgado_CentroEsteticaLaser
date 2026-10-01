@@ -1,5 +1,3 @@
-const API_BASE = "/api";
-
 const TREATMENTS = [
   { name: "Pure Skin Ritual", category: "Facial signature", price: "CRC 35.000", duration: 120 },
   { name: "Hydra Skin Therapy", category: "Facial signature", price: "CRC 35.000", duration: 120 },
@@ -9,14 +7,14 @@ const TREATMENTS = [
   { name: "Dermapen paquete 5 sesiones", category: "Paquete", price: "CRC 180.000", duration: 120 },
   { name: "Salmon DNA Repair paquete 5 sesiones", category: "Paquete", price: "CRC 280.000", duration: 120 },
   { name: "Bridal Glow Experience", category: "Evento", price: "CRC 100.000", duration: 120 },
-  { name: "Fotona Total Rejuvenation", category: "Láser Fotona", price: "CRC 350.000", duration: 120 },
-  { name: "Silk Skin Laser", category: "Depilación láser", price: "Desde CRC 50.000", duration: 60 },
+  { name: "Fotona Total Rejuvenation", category: "Laser Fotona", price: "₡ 175.000", duration: 120 },
+  { name: "Silk Skin Laser", category: "Depilación laser", price: "Desde CRC 50.000", duration: 60 },
   { name: "Star Former Sculpt", category: "Corporal", price: "CRC 50.000", duration: 60 },
-  { name: "Bikini completo + axilas", category: "Depilación láser", price: "CRC 50.000", duration: 60 },
-  { name: "Bikini completo + media pierna + axilas", category: "Depilación láser", price: "CRC 75.000", duration: 90 },
-  { name: "Bikini completo + pierna completa + axilas + bigote", category: "Depilación láser", price: "CRC 100.000", duration: 120 },
-  { name: "Espalda hombre", category: "Depilación láser", price: "CRC 50.000", duration: 60 },
-  { name: "Pecho hombre", category: "Depilación láser", price: "CRC 50.000", duration: 60 },
+  { name: "Bikini completo + axilas", category: "Depilación laser", price: "CRC 50.000", duration: 60 },
+  { name: "Bikini completo + media pierna + axilas", category: "Depilación laser", price: "CRC 75.000", duration: 90 },
+  { name: "Bikini completo + pierna completa + axilas + bigote", category: "Depilación laser", price: "CRC 100.000", duration: 120 },
+  { name: "Espalda hombre", category: "Depilación laser", price: "CRC 50.000", duration: 60 },
+  { name: "Pecho hombre", category: "Depilación laser", price: "CRC 50.000", duration: 60 },
   { name: "TightSculpting Fotona", category: "Corporal", price: "Según valoración", duration: 120 },
   { name: "Arañitas / Telangiectasias", category: "Vascular", price: "Según valoración", duration: 60 }
 ];
@@ -39,8 +37,8 @@ const BEAUTY_GOALS = {
   rejuvenecimiento: {
     label: "Rejuvenecimiento",
     title: "Fotona Total Rejuvenation",
-    copy: "Láser Fotona para trabajar firmeza, textura y luminosidad con protocolo personalizado.",
-    price: "CRC 350.000",
+    copy: "Laser Fotona para trabajar firmeza, textura y luminosidad con protocolo personalizado. Incluye un facial de obsequio.",
+    price: "₡ 175.000 · facial de obsequio",
     duration: "Duración aproximada: 120 min"
   },
   firmeza: {
@@ -60,7 +58,7 @@ const BEAUTY_GOALS = {
   vascular: {
     label: "Lesiones vasculares",
     title: "Arañitas / Telangiectasias",
-    copy: "Tratamiento láser enfocado en venitas visibles y lesiones vasculares superficiales.",
+    copy: "Tratamiento laser enfocado en venitas visibles y lesiones vasculares superficiales.",
     price: "Según valoración",
     duration: "Duración aproximada: 60 min"
   }
@@ -69,7 +67,6 @@ const BEAUTY_GOALS = {
 const $ = (selector) => document.querySelector(selector);
 const focusableSelector = "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])";
 let lastMenuTrigger = null;
-let bookingStep = 1;
 
 document.documentElement.classList.add("js-ready");
 
@@ -80,11 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initReveal();
   bindBeautyGoals();
   hydrateTreatmentSelect();
-  hydrateToday();
   bindBookingForm();
-  bindBookingSummary();
-  loadAvailability();
-  initMobileBookingFlow();
 });
 
 function bindNavigation() {
@@ -250,166 +243,42 @@ function bindVideos() {
 function hydrateTreatmentSelect() {
   const select = $("#booking-service");
   if (!select) return;
-  select.innerHTML = TREATMENTS
-    .map((item) => `<option value="${escapeHtml(item.name)}">${escapeHtml(item.name)} - ${escapeHtml(item.price)}</option>`)
-    .join("");
+  select.insertAdjacentHTML("beforeend", TREATMENTS
+    .map((item) => `<option value="${escapeHtml(item.name)}">${escapeHtml(item.name)}</option>`)
+    .join(""));
   const params = new URLSearchParams(window.location.search);
   const requestedService = params.get("service");
-  if (requestedService && TREATMENTS.some((item) => item.name === requestedService)) {
-    select.value = requestedService;
-  }
-  select.addEventListener("change", loadAvailability);
-  select.addEventListener("change", updateBookingSummary);
-  updateBookingSummary();
-}
-
-function hydrateToday() {
-  const date = $("#booking-date");
-  if (!date) return;
-  const today = toDateInput(new Date());
-  date.min = today;
-  date.value = today;
-  date.addEventListener("change", loadAvailability);
-  date.addEventListener("change", updateBookingSummary);
-}
-
-function bindBookingSummary() {
-  $("#slot-list")?.addEventListener("change", updateBookingSummary);
-  updateBookingSummary();
+  select.value = requestedService && TREATMENTS.some((item) => item.name === requestedService)
+    ? requestedService
+    : "";
 }
 
 function bindBookingForm() {
-  $("#booking-form")?.addEventListener("submit", async (event) => {
+  $("#booking-form")?.addEventListener("submit", (event) => {
     event.preventDefault();
     const form = event.currentTarget;
-    const submitButton = form.querySelector("button[type='submit']");
+    if (!form.reportValidity()) return;
     const payload = Object.fromEntries(new FormData(form).entries());
-    payload.service = $("#booking-service")?.value || payload.service;
-    payload.date = $("#booking-date")?.value || payload.date;
-    payload.time = document.querySelector("[name='time']:checked")?.value || "";
-
-    if (!payload.time) {
-      showNotice("Selecciona una hora disponible para continuar.", true);
+    const name = String(payload.name || "").trim();
+    const phone = String(payload.phone || "").trim();
+    const service = String(payload.service || "").trim();
+    const note = String(payload.note || "").trim();
+    if (!name || !phone || !service) {
+      showNotice("Completa tu nombre, teléfono y servicio de interés.", true);
       return;
     }
-
-    submitButton.disabled = true;
-      showNotice("Guardando solicitud de cita...", false);
-
-    try {
-      const response = await fetch(`${API_BASE}/appointments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(result.message || "No se pudo guardar la cita.");
-      form.reset();
-      hydrateToday();
-      updateBookingSummary();
-      showNotice(result.message || "Solicitud registrada. Te contactaremos para confirmar.", false);
-      await loadAvailability();
-      setBookingStep(5);
-    } catch (error) {
-      showNotice(error.message || "No se pudo conectar con la agenda. Intenta de nuevo.", true);
-    } finally {
-      submitButton.disabled = false;
-    }
+    const lines = [
+      "Hola, me gustaría consultar disponibilidad para una cita en Jenny Delgado Centro Estética Laser.",
+      `Nombre: ${name}`,
+      `Teléfono: ${phone}`,
+      `Servicio de interés: ${service}`
+    ];
+    if (note) lines.push(`Comentario: ${note}`);
+    lines.push("Quedo pendiente de la fecha y hora disponibles para confirmar.");
+    const url = `https://wa.me/50688840452?text=${encodeURIComponent(lines.join("\n"))}`;
+    showNotice("Se abrirá WhatsApp. Envía el mensaje para que podamos confirmar tu cita.", false);
+    window.location.assign(url);
   });
-}
-
-function initMobileBookingFlow() {
-  const form = $("#booking-form");
-  if (!form) return;
-  $("#booking-prev")?.addEventListener("click", () => setBookingStep(Math.max(1, bookingStep - 1)));
-  $("#booking-next")?.addEventListener("click", () => {
-    if (!validateBookingStep(bookingStep)) return;
-    if (bookingStep >= 4) {
-      form.requestSubmit();
-      return;
-    }
-    setBookingStep(bookingStep + 1);
-  });
-  form.addEventListener("change", () => updateBookingStepControls());
-  setBookingStep(1);
-}
-
-function setBookingStep(step) {
-  const form = $("#booking-form");
-  if (!form) return;
-  bookingStep = Math.min(5, Math.max(1, Number(step) || 1));
-  form.dataset.bookingStep = String(bookingStep);
-  document.querySelectorAll("[data-progress-step]").forEach((item) => {
-    const itemStep = Number(item.dataset.progressStep);
-    item.classList.toggle("is-active", itemStep === bookingStep);
-    item.classList.toggle("is-complete", itemStep < bookingStep);
-  });
-  updateBookingStepControls();
-  if (window.matchMedia("(max-width: 760px)").matches) {
-    form.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-}
-
-function updateBookingStepControls() {
-  const prev = $("#booking-prev");
-  const next = $("#booking-next");
-  if (prev) prev.disabled = bookingStep <= 1 || bookingStep >= 5;
-  if (next) {
-    next.hidden = bookingStep >= 5;
-    next.textContent = bookingStep >= 4 ? "Solicitar confirmación" : "Continuar";
-  }
-}
-
-function validateBookingStep(step) {
-  if (step === 1 && !$("#booking-service")?.value) {
-    showNotice("Selecciona un tratamiento para continuar.", true);
-    return false;
-  }
-  if (step === 2 && !$("#booking-date")?.value) {
-    showNotice("Selecciona una fecha para continuar.", true);
-    return false;
-  }
-  if (step === 3 && !document.querySelector("[name='time']:checked")) {
-    showNotice("Selecciona una hora disponible para continuar.", true);
-    return false;
-  }
-  return true;
-}
-
-async function loadAvailability() {
-  const service = $("#booking-service")?.value;
-  const date = $("#booking-date")?.value;
-  const list = $("#slot-list");
-  if (!service || !date || !list) return;
-  list.innerHTML = '<p class="empty-state">Buscando horarios...</p>';
-
-  try {
-    const url = new URL(`${API_BASE}/availability`, window.location.origin);
-    url.searchParams.set("service", service);
-    url.searchParams.set("date", date);
-    const response = await fetch(url);
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(payload.message || "No se pudo leer disponibilidad.");
-    renderSlots(payload.slots || []);
-  } catch (error) {
-    list.innerHTML = `<p class="empty-state is-error">${escapeHtml(error.message || "Agenda no disponible.")}</p>`;
-  }
-}
-
-function renderSlots(slots) {
-  const list = $("#slot-list");
-  if (!list) return;
-  if (!slots.length) {
-    list.innerHTML = '<p class="empty-state">No hay horarios disponibles para esta fecha.</p>';
-    return;
-  }
-  list.innerHTML = slots.map((slot, index) => `
-    <label class="slot-option">
-      <input type="radio" name="time" value="${slot.time}" ${index === 0 ? "checked" : ""}>
-      <span>${slot.time}</span>
-    </label>
-  `).join("");
-  updateBookingSummary();
 }
 
 function showNotice(message, isError) {
@@ -418,18 +287,6 @@ function showNotice(message, isError) {
   notice.textContent = message;
   notice.classList.toggle("is-error", Boolean(isError));
   notice.hidden = false;
-}
-
-function updateBookingSummary() {
-  const serviceName = $("#booking-service")?.value || TREATMENTS[0].name;
-  const treatment = TREATMENTS.find((item) => item.name === serviceName) || TREATMENTS[0];
-  const date = $("#booking-date")?.value || "";
-  const time = document.querySelector("[name='time']:checked")?.value || "";
-  if ($("#summary-service")) $("#summary-service").textContent = treatment.name;
-  if ($("#summary-price")) $("#summary-price").textContent = treatment.price;
-  if ($("#summary-duration")) $("#summary-duration").textContent = `${treatment.duration} min aprox.`;
-  if ($("#summary-date")) $("#summary-date").textContent = date ? formatDate(date) : "Selecciona una fecha";
-  if ($("#summary-time")) $("#summary-time").textContent = time || "Selecciona una hora";
 }
 
 function openVideoModal(videoId, title = "Video informativo") {
@@ -448,16 +305,6 @@ function closeVideoModal() {
   if (!modal || !frame) return;
   frame.src = "";
   modal.hidden = true;
-}
-
-function toDateInput(date) {
-  return date.toISOString().slice(0, 10);
-}
-
-function formatDate(value) {
-  const [year, month, day] = String(value).split("-").map(Number);
-  if (!year || !month || !day) return value;
-  return new Intl.DateTimeFormat("es-CR", { weekday: "short", day: "numeric", month: "short" }).format(new Date(year, month - 1, day));
 }
 
 function escapeHtml(value) {

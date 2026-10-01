@@ -618,22 +618,6 @@ h3 {
   line-height: 1.75;
 }
 
-.tech-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 22px;
-}
-
-.tech-tabs span {
-  border: 1px solid rgba(255, 255, 255, .16);
-  border-radius: 999px;
-  padding: 9px 12px;
-  color: rgba(255, 255, 255, .8);
-  background: rgba(255, 255, 255, .08);
-  font-weight: 780;
-}
-
 .tech-video-grid {
   grid-column: 8 / span 5;
   display: grid;
@@ -2113,5 +2097,158 @@ h3 {
   .beauty-feature dl div,
   .booking-summary dl div {
     display: grid;
+  }
+}
+
+.booking-page .booking-hero {
+  min-height: 360px;
+  padding-bottom: 52px;
+}
+
+.booking-page .booking-app {
+  padding-top: 54px;
+}
+
+.booking-form-heading {
+  display: grid;
+  gap: 10px;
+}
+
+.booking-form-heading h2 {
+  font-size: clamp(32px, 4vw, 48px);
+}
+
+.booking-form-heading > p:last-child,
+.booking-disclaimer {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.booking-card label em {
+  color: var(--rose);
+  font-style: normal;
+}
+
+.booking-card .form-grid-wide {
+  grid-column: 1 / -1;
+}
+
+.booking-card textarea {
+  width: 100%;
+  min-height: 108px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, .88);
+  font: inherit;
+  outline: none;
+}
+
+.booking-card textarea:focus {
+  border-color: rgba(189, 86, 119, .56);
+  box-shadow: 0 0 0 4px rgba(189, 86, 119, .1);
+}
+
+.booking-page .booking-submit {
+  display: inline-flex;
+}
+
+.booking-summary .opening-hours {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.booking-summary .opening-hours div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding: 13px 0;
+}
+
+.booking-summary .opening-hours dt {
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.booking-summary .opening-hours dd {
+  font-size: 14px;
+  font-weight: 750;
+  text-align: right;
+}
+
+.booking-whatsapp-link {
+  width: fit-content;
+  color: var(--mulberry);
+  font-weight: 850;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.price-grid strong small {
+  display: block;
+  margin-top: 7px;
+  color: var(--rose);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.footer-hours {
+  display: grid;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.footer-hours strong {
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.footer-hours small {
+  color: rgba(255, 255, 255, .7);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.brand-footer .footer-whatsapp {
+  color: var(--white);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+@media (max-width: 760px) {
+  .booking-page .booking-hero {
+    min-height: 0;
+    padding-bottom: 38px;
+  }
+
+  .booking-page .booking-app {
+    padding-top: 32px;
+  }
+
+  .booking-page .booking-card {
+    display: grid;
+  }
+
+  .booking-page .booking-summary {
+    order: 0;
+  }
+
+  .booking-summary .opening-hours {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-form-heading h2 {
+    font-size: 30px;
   }
 }
