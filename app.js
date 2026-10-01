@@ -77,6 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initReveal();
   bindBeautyGoals();
   hydrateTreatmentSelect();
+  initBookingPreferences();
   bindBookingForm();
 });
 
@@ -253,6 +254,118 @@ function hydrateTreatmentSelect() {
     : "";
 }
 
+const BOOKING_HOURS = {
+  2: [8 * 60, 14 * 60],
+  4: [8 * 60, 20 * 60],
+  5: [8 * 60, 11 * 60],
+  6: [8 * 60, 13 * 60]
+};
+
+function costaRicaNow() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Costa_Rica", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+  }).formatToParts(new Date());
+  return Object.fromEntries(parts.map((part) => [part.type, Number(part.value)]));
+}
+
+function initBookingPreferences() {
+  const service = $("#booking-service");
+  const date = $("#booking-date");
+  if (!service || !date) return;
+  const today = costaRicaNow();
+  date.min = `${today.year}-${String(today.month).padStart(2, "0")}-${String(today.day).padStart(2, "0")}`;
+  service.addEventListener("change", () => {
+    updateBookingEstimate();
+    renderBookingTimes();
+  });
+  date.addEventListener("change", renderBookingTimes);
+  updateBookingEstimate();
+  renderBookingTimes();
+}
+
+function selectedTreatment() {
+  return TREATMENTS.find((item) => item.name === $("#booking-service")?.value);
+}
+
+function estimatePrice(treatment) {
+  if (!treatment) return "Selecciona un servicio";
+  if (treatment.price === "Según valoración") return "Por definir en valoración";
+  return treatment.price.replace("Desde CRC", "Desde ₡").replace("CRC", "₡");
+}
+
+function updateBookingEstimate() {
+  const treatment = selectedTreatment();
+  const price = $("#booking-estimate-price");
+  const detail = $("#booking-estimate-detail");
+  if (price) price.textContent = estimatePrice(treatment);
+  if (detail) detail.textContent = treatment?.name === "Fotona Total Rejuvenation"
+    ? "Incluye un facial de obsequio. El importe final se confirma en valoración."
+    : treatment?.price === "Según valoración"
+      ? "Este servicio requiere valoración antes de definir el precio."
+      : "Precio de referencia para un servicio; el importe final se confirma en valoración.";
+}
+
+function formatBookingTime(minutes) {
+  const hour = Math.floor(minutes / 60);
+  const minute = String(minutes % 60).padStart(2, "0");
+  return `${hour % 12 || 12}:${minute} ${hour < 12 ? "a. m." : "p. m."}`;
+}
+
+function renderBookingTimes() {
+  const container = $("#booking-times");
+  const note = $("#booking-time-note");
+  const treatment = selectedTreatment();
+  const date = $("#booking-date")?.value || "";
+  if (!container || !note) return;
+  const previous = container.querySelector("input:checked")?.value;
+  container.replaceChildren();
+  const empty = (message) => {
+    const text = document.createElement("p");
+    text.className = "booking-time-empty";
+    text.textContent = message;
+    container.appendChild(text);
+  };
+  if (!treatment || !date) {
+    empty("Elige un servicio y una fecha para ver las horas de atención.");
+    note.textContent = "Son horas de preferencia, no espacios confirmados.";
+    return;
+  }
+  const [year, month, day] = date.split("-").map(Number);
+  const selected = new Date(Date.UTC(year, month - 1, day));
+  const hours = BOOKING_HOURS[selected.getUTCDay()];
+  if (!hours) {
+    empty("Ese día no hay atención. Elige martes, jueves, viernes o sábado.");
+    note.textContent = "Selecciona un día de atención para continuar.";
+    return;
+  }
+  const today = costaRicaNow();
+  const todayISO = `${today.year}-${String(today.month).padStart(2, "0")}-${String(today.day).padStart(2, "0")}`;
+  const cutoff = date === todayISO ? today.hour * 60 + today.minute + 30 : 0;
+  const times = [];
+  for (let start = hours[0]; start + treatment.duration <= hours[1]; start += 30) {
+    if (start > cutoff) times.push(start);
+  }
+  if (!times.length) {
+    empty("No quedan horas de preferencia para ese día. Elige otra fecha.");
+    note.textContent = "La duración del servicio se toma en cuenta al mostrar horas.";
+    return;
+  }
+  for (const minutes of times) {
+    const label = document.createElement("label");
+    label.className = "booking-time-option";
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "time";
+    input.value = `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+    input.checked = input.value === previous;
+    const text = document.createElement("span");
+    text.textContent = formatBookingTime(minutes);
+    label.append(input, text);
+    container.appendChild(label);
+  }
+  note.textContent = "Elige una hora de preferencia. Confirmaremos el espacio por WhatsApp.";
+}
+
 function bindBookingForm() {
   $("#booking-form")?.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -262,19 +375,28 @@ function bindBookingForm() {
     const name = String(payload.name || "").trim();
     const phone = String(payload.phone || "").trim();
     const service = String(payload.service || "").trim();
+    const date = String(payload.date || "").trim();
+    const time = String(payload.time || "").trim();
     const note = String(payload.note || "").trim();
-    if (!name || !phone || !service) {
-      showNotice("Completa tu nombre, teléfono y servicio de interés.", true);
+    const treatment = selectedTreatment();
+    if (!name || !phone || !treatment || !date || !time) {
+      showNotice("Completa tus datos y elige una fecha y hora de preferencia.", true);
       return;
     }
+    const dateLabel = new Intl.DateTimeFormat("es-CR", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(new Date(`${date}T12:00:00Z`));
+    const [hour, minute] = time.split(":").map(Number);
     const lines = [
       "Hola, me gustaría consultar disponibilidad para una cita en Jenny Delgado Centro Estética Laser.",
       `Nombre: ${name}`,
       `Teléfono: ${phone}`,
-      `Servicio de interés: ${service}`
+      `Servicio de interés: ${service}`,
+      `Total aproximado: ${estimatePrice(treatment)}`,
+      `Fecha de preferencia: ${dateLabel}`,
+      `Hora de preferencia: ${formatBookingTime(hour * 60 + minute)}`
     ];
+    if (treatment.name === "Fotona Total Rejuvenation") lines.push("Incluye un facial de obsequio.");
     if (note) lines.push(`Comentario: ${note}`);
-    lines.push("Quedo pendiente de la fecha y hora disponibles para confirmar.");
+    lines.push("Si esa hora no está disponible, agradecería una alternativa cercana. Quedo pendiente de confirmación.");
     const url = `https://wa.me/50688840452?text=${encodeURIComponent(lines.join("\n"))}`;
     showNotice("Se abrirá WhatsApp. Envía el mensaje para que podamos confirmar tu cita.", false);
     window.location.assign(url);
